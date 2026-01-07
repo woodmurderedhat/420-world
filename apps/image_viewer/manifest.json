@@ -7,5 +7,6 @@
 	"description": "Preview a bundled image with aspect-fit scaling.",
 	"category": "Media",
 	"author": "Shell Team",
-	"permissions": []
+	"permissions": [],
+	"pinned": false
 }

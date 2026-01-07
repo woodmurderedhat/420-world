@@ -91,11 +91,15 @@ func _rebuild() -> void:
 	for rid in recent_ids:
 		var m := AppRegistry.get_manifest(rid)
 		if not m.is_empty():
+			if bool(m.get("hidden", false)):
+				continue
 			recent_manifests.append(m)
 	if not recent_manifests.is_empty():
 		_add_section("Recent", recent_manifests)
 	var categories: Dictionary = {}
 	for manifest: Dictionary in AppRegistry.list_manifests():
+		if bool(manifest.get("hidden", false)):
+			continue
 		var category := String(manifest.get("category", "General"))
 		categories[category] = categories.get(category, [])
 		(categories[category] as Array).append(manifest)
@@ -113,6 +117,8 @@ func _rebuild() -> void:
 func _add_flat_results(query: String) -> void:
 	var matches: Array = []
 	for manifest: Dictionary in AppRegistry.list_manifests():
+		if bool(manifest.get("hidden", false)):
+			continue
 		var app_name := String(manifest.get("name", ""))
 		var desc := String(manifest.get("description", ""))
 		var author := String(manifest.get("author", ""))

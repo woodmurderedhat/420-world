@@ -116,9 +116,42 @@ func build_basic_theme_resource(theme_name: StringName = "builtin") -> Theme:
 	# Add font if available
 	if _font != null:
 		theme.set_font("default_font", "Label", _font)
+		theme.set_font("font", "PopupMenu", _font)
 		# Make the font available to Buttons/Labels via theme; callers may still use add_theme_font_override
 		# Important constants
 		theme.set_constant("icon_size", "Button", get_icon_size())
+	
+	# PopupMenu styling to look like tooltips (dark, rounded)
+	var sb_popup: StyleBoxFlat = StyleBoxFlat.new()
+	sb_popup.bg_color = Color(0.12, 0.13, 0.17, 0.95)
+	sb_popup.corner_radius_top_left = 6
+	sb_popup.corner_radius_top_right = 6
+	sb_popup.corner_radius_bottom_left = 6
+	sb_popup.corner_radius_bottom_right = 6
+	sb_popup.border_width_left = 1
+	sb_popup.border_width_top = 1
+	sb_popup.border_width_right = 1
+	sb_popup.border_width_bottom = 1
+	sb_popup.border_color = Color(0.3, 0.35, 0.4)
+	sb_popup.content_margin_left = 8
+	sb_popup.content_margin_right = 8
+	sb_popup.content_margin_top = 8
+	sb_popup.content_margin_bottom = 8
+	
+	theme.set_stylebox("panel", "PopupMenu", sb_popup)
+	theme.set_color("font_color", "PopupMenu", Color(0.9, 0.92, 0.96))
+	theme.set_color("font_hover_color", "PopupMenu", Color(1.0, 1.0, 1.0))
+	theme.set_constant("v_separation", "PopupMenu", 8)
+	
+	# Item hover style for PopupMenu
+	var sb_hover: StyleBoxFlat = StyleBoxFlat.new()
+	sb_hover.bg_color = Color(1.0, 1.0, 1.0, 0.1)
+	sb_hover.corner_radius_top_left = 4
+	sb_hover.corner_radius_top_right = 4
+	sb_hover.corner_radius_bottom_left = 4
+	sb_hover.corner_radius_bottom_right = 4
+	theme.set_stylebox("hover", "PopupMenu", sb_hover)
+
 	# Colors and styleboxes could be added here for a richer theme
 	emit_signal("theme_resource_changed", theme_name, theme)
 	return theme

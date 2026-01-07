@@ -1,9 +1,0 @@
-{
-	"id": "theme_designer",
-	"name": "Theme Designer",
-	"author": "Shell",
-	"entry_scene": "res://apps/theme_designer/main.tscn",
-	"version": "0.1.0",
-	"icon": "res://assets/icons/settings.svg",
-	"pinned": false
-}

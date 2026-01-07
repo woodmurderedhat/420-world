@@ -7,10 +7,9 @@ var _input_enabled: bool = true
 @onready var window_manager: GameWindowManager = $WindowManager
 @onready var taskbar: TaskbarUI = $Taskbar
 @onready var start_menu: StartMenuPanel = $StartMenu
-@onready var icons_box: VBoxContainer = $DesktopLayer/Icons
+@onready var background_viewport: SubViewport = $BackgroundViewportContainer/BackgroundViewport
+# Dependent on Taskbar internal structure
 @onready var start_button: Button = $Taskbar/HBox/StartButton
-@onready var background_layer: TextureRect = $DesktopLayer
-
 
 func _ready() -> void:
 	if OS.get_cmdline_args().has("--headless-tests"):
@@ -28,6 +27,7 @@ func _ready() -> void:
 	window_manager.window_restored.connect(_on_window_restored)
 
 	taskbar.window_action_requested.connect(_on_taskbar_window_action)
+	taskbar.pin_app_requested.connect(_on_pin_app_requested)
 	taskbar.start_menu_toggled.connect(_on_start_menu_toggled)
 	taskbar.tray_icon_pressed.connect(func(id): _on_tray_icon_pressed(id))
 	taskbar.app_launch_requested.connect(func(app_id): 
@@ -38,8 +38,8 @@ func _ready() -> void:
 		window_manager.open_app(app_id)
 		start_menu.hide_menu()
 	)
-	start_menu.create_shortcut_requested.connect(func(app_id): _create_shortcut(app_id))
-	start_menu.pin_to_taskbar_requested.connect(func(app_id): _pin_to_taskbar(app_id))
+	start_menu.create_shortcut_requested.connect(func(_app_id): Log.info("Shortcut creation not supported on new desktop"))
+	start_menu.pin_to_taskbar_requested.connect(func(app_id): _on_pin_app_requested(app_id, true))
 	start_menu.session_exit_requested.connect(func(): _on_session_exit())
 	start_menu.session_restart_requested.connect(func(): _on_session_restart())
 
@@ -48,74 +48,100 @@ func _ready() -> void:
 
 	var settings := get_tree().root.get_node_or_null("/root/SettingsManager")
 	if settings != null:
-		settings.setting_changed.connect(_on_setting_changed)
-		_update_background()
+		# Theme changes might still affect windows/taskbar
+		pass
 
 	var theme_mgr := get_tree().root.get_node_or_null("/root/ThemeManager")
 	if theme_mgr != null:
 		_palette = theme_mgr.get_palette()
 		_apply_theme(_palette)
 		theme_mgr.theme_changed.connect(func(_name, palette): _apply_theme(palette))
+	
+	_load_background_game()
 
+func _on_pin_app_requested(app_id: String, pin: bool) -> void:
+	var settings := get_tree().root.get_node_or_null("/root/SettingsManager")
+	if settings == null:
+		return
+	
+	var current_pins: Array = []
+	var val: Variant = settings.get_value("ui.pinned_apps", null)
+	
+	# Load current state (or defaults if null)
+	if typeof(val) == TYPE_ARRAY:
+		current_pins = val.duplicate()
+	elif val == null:
+		# If settings not set, reconstruct what is currently effectively pinned (manifest defaults)
+		for m in AppRegistry.list_manifests():
+			if bool(m.get("pinned", false)):
+				current_pins.append(m.get("id"))
+
+	if pin:
+		if not app_id in current_pins:
+			current_pins.append(app_id)
+	else:
+		if app_id in current_pins:
+			current_pins.erase(app_id)
+
+	settings.set_value("ui.pinned_apps", current_pins)
+	_update_pinned_apps()
 
 func _update_work_area() -> void:
 	var rect := Rect2(Vector2.ZERO, Vector2(1080, 720))
-	# Desktop is rendered in virtual coordinates (scaled by DesktopScaler).
+	if get_viewport() != null:
+		# In a real dynamic resize scenario, we'd use get_viewport_rect().size
+		# keeping it simple or consistent with existing scaler logic
+		pass
+		
 	var tb_h: float = float($Taskbar.size.y)
 	rect.size.y -= tb_h
 	window_manager.set_work_area(rect)
 
 
-func _on_setting_changed(key: StringName, _value: Variant) -> void:
-	if String(key).begins_with("background."):
-		_update_background()
+func _on_registry_changed() -> void:
+	_update_pinned_apps()
 
 
-func _update_background() -> void:
+func _update_pinned_apps() -> void:
+	var manifests := AppRegistry.list_manifests()
+	var ids: Array = []
+	var lookup: Dictionary = {}
 	var settings := get_tree().root.get_node_or_null("/root/SettingsManager")
-	if settings == null:
-		return
+	var saved_pins: Array = []
+	var use_saved: bool = false
+	
+	if settings != null:
+		var val: Variant = settings.get_value("ui.pinned_apps", null)
+		if typeof(val) == TYPE_ARRAY:
+			saved_pins = val.duplicate()
+			use_saved = true
+			
+			# Migration/Sanitization: If desktop_game is present, reset it.
+			if saved_pins.has("desktop_game"):
+				saved_pins = ["settings", "theme_designer"]
+				settings.set_value("ui.pinned_apps", saved_pins)
+				use_saved = true
 
-	var type: String = settings.get_value("background.type", "solid")
-	var color_a: Color = Color(String(settings.get_value("background.color_a", "#12141a")))
-	var color_b: Color = Color(String(settings.get_value("background.color_b", "#1e222b")))
-	var image_path: String = settings.get_value("background.image_path", "")
-
-	match type:
-		"solid":
-			var grad: GradientTexture2D = GradientTexture2D.new()
-			grad.width = 1
-			grad.height = 1
-			grad.fill = GradientTexture2D.FILL_LINEAR
-			grad.gradient = Gradient.new()
-			grad.gradient.offsets = PackedFloat32Array([0.0, 1.0])
-			grad.gradient.colors = PackedColorArray([color_a, color_a])
-			UIHelpers.safe_set_texture(background_layer, grad)
-		"gradient":
-			var grad: GradientTexture2D = GradientTexture2D.new()
-			grad.width = 64
-			grad.height = 64
-			grad.fill_from = Vector2(0, 0)
-			grad.fill_to = Vector2(0, 1)  # Vertical
-			grad.gradient = Gradient.new()
-			grad.gradient.colors = PackedColorArray([color_a, color_b])
-			UIHelpers.safe_set_texture(background_layer, grad)
-		"image":
-			if image_path != "" and ResourceLoader.exists(image_path):
-				var tex = ResourceLoader.load(image_path)
-				if tex is Texture2D:
-					UIHelpers.safe_set_texture(background_layer, tex)
-					return
-
-			# Fallback to solid if image invalid
-			var grad: GradientTexture2D = GradientTexture2D.new()
-			grad.width = 1
-			grad.height = 1
-			grad.fill = GradientTexture2D.FILL_LINEAR
-			grad.gradient = Gradient.new()
-			grad.gradient.offsets = PackedFloat32Array([0.0, 1.0])
-			grad.gradient.colors = PackedColorArray([color_a, color_a])
-			UIHelpers.safe_set_texture(background_layer, grad)
+	# If using saved list, we just iterate that list directly to preserve order
+	if use_saved:
+		for app_id in saved_pins:
+			# Look up manifest for this id
+			var found_manifest = AppRegistry.get_manifest(String(app_id))
+			if not found_manifest.is_empty():
+				ids.append(app_id)
+				lookup[String(app_id)] = found_manifest
+	else:
+		# Fallback to manifests
+		for manifest in manifests:
+			var app_id := String(manifest.get("id", ""))
+			if app_id == "":
+				continue
+			var pinned_flag: bool = bool(manifest.get("pinned", false))
+			if pinned_flag:
+				ids.append(app_id)
+				lookup[app_id] = manifest
+				
+	taskbar.set_pinned_apps(ids, lookup)
 
 
 func _get_icon_from_manifest(manifest: Dictionary) -> Texture2D:
@@ -139,8 +165,7 @@ func _on_window_opened(id: String) -> void:
 	var manifest: Dictionary = (
 		window_manager.windows[id].get("manifest", {}) if window_manager.windows.has(id) else {}
 	)
-	var icon_tex: Texture2D = null
-	icon_tex = _get_icon_from_manifest(manifest)
+	var icon_tex: Texture2D = _get_icon_from_manifest(manifest)
 	var app_id := window_manager.get_window_app_id(id)
 	taskbar.add_window(id, app_id, window_manager.get_window_title(id), icon_tex)
 	taskbar.set_window_state(id, window_manager.get_window_state(id))
@@ -186,30 +211,6 @@ func _on_start_menu_toggled() -> void:
 
 
 func _unhandled_input(event: InputEvent) -> void:
-	# Right-click on desktop -> show context menu
-	if (
-		event is InputEventMouseButton
-		and event.button_index == MOUSE_BUTTON_RIGHT
-		and event.pressed
-	):
-		var menu := PopupMenu.new()
-		add_child(menu)
-		menu.add_item("Refresh", 1)
-		menu.add_item("Change Theme", 2)
-		menu.add_item("Open Settings", 3)
-		menu.id_pressed.connect(
-			func(id: int):
-				match id:
-					1:
-						_refresh_desktop()
-					2:
-						_cycle_theme()
-					3:
-						_open_settings()
-				menu.queue_free()
-		)
-		menu.popup(Rect2(event.position, Vector2(180, 96)))
-		return
 	if _input_enabled and event is InputEventKey and event.pressed and not event.echo:
 		if event.alt_pressed and event.keycode == KEY_F4:
 			_close_focused_window()
@@ -232,60 +233,6 @@ func _unhandled_input(event: InputEvent) -> void:
 			and not start_button.get_global_rect().has_point(pos)
 		):
 			start_menu.hide_menu()
-
-
-func _rebuild_icons() -> void:
-	for c in icons_box.get_children():
-		c.queue_free()
-	for manifest in AppRegistry.list_manifests():
-		var app_id := String(manifest.get("id", ""))
-		var app_name := String(manifest.get("name", app_id))
-		if app_id == "":
-			continue
-		var b := Button.new()
-		UIHelpers.safe_set_text(b, app_name)
-		b.size_flags_horizontal = Control.SIZE_SHRINK_CENTER
-		var tex := _get_icon_from_manifest(manifest)
-		var tm: Node = get_tree().root.get_node_or_null("/root/ThemeManager")
-		if tex != null and tm != null:
-			(tm as Object).apply_icon_to_button(b, tex)
-		elif tex != null:
-			b.icon = tex
-		b.pressed.connect(func(): window_manager.open_app(app_id))
-		icons_box.add_child(b)
-
-
-func _on_registry_changed() -> void:
-	_rebuild_icons()
-	_update_pinned_apps()
-
-
-func _update_pinned_apps() -> void:
-	var manifests := AppRegistry.list_manifests()
-	var ids: Array = []
-	var lookup: Dictionary = {}
-	# Read saved pinned list from SettingsManager if available
-	var settings := get_tree().root.get_node_or_null("/root/SettingsManager")
-	var saved_pins: Array = []
-	if settings != null:
-		var val: Variant = settings.get_value("ui.pinned_apps", null)
-		if typeof(val) == TYPE_ARRAY:
-			saved_pins = val.duplicate()
-
-	for manifest in manifests:
-		var app_id := String(manifest.get("id", ""))
-		if app_id == "":
-			continue
-		lookup[app_id] = manifest
-		var pinned_flag: bool = bool(manifest.get("pinned", true))
-		# If saved pins present, prefer saved list
-		if not saved_pins.is_empty():
-			if app_id in saved_pins:
-				ids.append(app_id)
-		else:
-			if pinned_flag:
-				ids.append(app_id)
-	taskbar.set_pinned_apps(ids, lookup)
 
 
 func _toggle_start_menu() -> void:
@@ -320,10 +267,6 @@ func _cycle_windows() -> void:
 
 func _apply_theme(palette: Dictionary) -> void:
 	_palette = palette
-	# Background color from theme is ignored in favor of SettingsManager "background" prefs
-	# unless we add logic to respect "theme" setting for background.
-	# For now, just refresh background in case it's solid/gradient.
-	_update_background()
 	taskbar.apply_palette(palette)
 	start_menu.apply_palette(palette)
 	for id in window_manager.windows.keys():
@@ -333,123 +276,41 @@ func _apply_theme(palette: Dictionary) -> void:
 func _apply_theme_to_window(id: String) -> void:
 	if not window_manager.windows.has(id):
 		return
-	var win: GameWindowPanel = window_manager.windows[id]["node"]
+	var win: Object = window_manager.windows[id]["node"]
 	if win.has_method("apply_palette"):
 		win.apply_palette(_palette)
 
 
-func _refresh_desktop() -> void:
-	_rebuild_icons()
-	Log.info("Desktop: refresh requested")
-
-
-func _cycle_theme() -> void:
-	var settings := get_tree().root.get_node_or_null("/root/SettingsManager")
-	if settings != null:
-		var cur := String(settings.get_value("ui.theme", "light"))
-		var next := "dark" if cur != "dark" else "light"
-		settings.set_value("ui.theme", next)
-	else:
-		Log.warn("No SettingsManager to change theme")
-
-
-func _open_settings() -> void:
-	if window_manager != null:
-		window_manager.open_app("settings")
-	else:
-		Log.warn("No WindowManager to open settings")
-
-
-func _create_shortcut(app_id: String) -> void:
-	var manifest := AppRegistry.get_manifest(app_id)
-	if manifest.is_empty():
-		return
-	var existing: Node = null
-	for c in icons_box.get_children():
-		if c.name == app_id:
-			existing = c
-			break
-	if existing != null:
-		return
-	var b := Button.new()
-	b.name = app_id
-	UIHelpers.safe_set_text(b, String(manifest.get("name", app_id)))
-	b.size_flags_horizontal = Control.SIZE_SHRINK_CENTER
-	var tex := _get_icon_from_manifest(manifest)
-	var tm: Node = get_tree().root.get_node_or_null("/root/ThemeManager")
-	if tex != null and tm != null:
-		(tm as Object).apply_icon_to_button(b, tex)
-	elif tex != null:
-		b.icon = tex
-	b.pressed.connect(func(): window_manager.open_app(app_id))
-	b.gui_input.connect(
-		func(event: InputEvent):
-			if (
-				event is InputEventMouseButton
-				and event.button_index == MOUSE_BUTTON_RIGHT
-				and event.pressed
-			):
-				var menu := PopupMenu.new()
-				add_child(menu)
-				menu.add_item("Pin to Taskbar", 1)
-				menu.add_item("Remove Shortcut", 2)
-				menu.id_pressed.connect(
-					func(id: int):
-						match id:
-							1:
-								_pin_to_taskbar(app_id)
-							2:
-								b.queue_free()
-						menu.queue_free()
-				)
-				menu.popup(get_global_rect())
-				get_viewport().set_input_as_handled()
-	)
-	icons_box.add_child(b)
-
-
-func _pin_to_taskbar(app_id: String) -> void:
-	var manifests := AppRegistry.list_manifests()
-	var ids: Array = []
-	var lookup: Dictionary = {}
-	var found := false
-	for manifest in manifests:
-		var aid := String(manifest.get("id", ""))
-		if aid == "":
-			continue
-		lookup[aid] = manifest
-		var pinned_flag: bool = bool(manifest.get("pinned", true))
-		if pinned_flag or aid == app_id:
-			ids.append(aid)
-		if aid == app_id:
-			found = true
-	if not found:
-		return
-	taskbar.set_pinned_apps(ids, lookup)
-	# Persist pinned list in SettingsManager
-	var settings := get_tree().root.get_node_or_null("/root/SettingsManager")
-	if settings != null:
-		settings.set_value("ui.pinned_apps", ids)
-	else:
-		var sm := get_tree().root.get_node_or_null("/root/SaveManager")
-		if sm != null:
-			var g: Dictionary = sm.load_global()
-			g["pinned_apps"] = ids
-			sm.save_global(g)
-
-
-func _on_tray_icon_pressed(id: String) -> void:
-	if id == "volume":
-		Log.info("Tray: volume pressed")
+func _on_tray_icon_pressed(_id: int) -> void:
+	pass
 
 
 func _on_session_exit() -> void:
-	Log.info("Session: exit requested")
-	get_tree().quit(0)
+	get_tree().quit()
 
 
 func _on_session_restart() -> void:
-	var logger: Object = get_tree().root.get_node_or_null("/root/Log")
-	if logger != null:
-		logger.info("Session: restart requested")
-	get_tree().quit(0)
+	var exe_path = OS.get_executable_path()
+	OS.create_process(exe_path, OS.get_cmdline_args())
+	get_tree().quit()
+
+
+func _load_background_game() -> void:
+	var app_id = "desktop_game"
+	var manifest = AppRegistry.get_manifest(app_id)
+	if manifest == null:
+		Log.error("Desktop: Could not find manifest for " + app_id)
+		return
+	
+	var scene_path = manifest.get("entry_scene", "")
+	if scene_path == "" or not ResourceLoader.exists(scene_path):
+		Log.error("Desktop: Invalid entry scene for " + app_id)
+		return
+		
+	var scene = ResourceLoader.load(scene_path)
+	if scene:
+		var instance = scene.instantiate()
+		background_viewport.add_child(instance)
+		if instance.has_method("launch"):
+			instance.launch({})
+		Log.info("Desktop: Loaded background game")

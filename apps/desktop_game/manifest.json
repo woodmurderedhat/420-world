@@ -1,0 +1,10 @@
+{
+	"id": "desktop_game",
+	"name": "Desktop Environment",
+	"version": "1.0.0",
+	"entry_scene": "res://apps/desktop_game/game.tscn",
+	"icon": "res://assets/icons/default_app.svg",
+	"category": "system",
+	"pinned": false,
+	"hidden": true
+}

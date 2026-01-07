@@ -5,6 +5,7 @@ signal window_action_requested(window_id: String, action: StringName)
 signal start_menu_toggled
 signal tray_icon_pressed(icon_id: String)
 signal app_launch_requested(app_id: String)
+signal pin_app_requested(app_id: String, pin: bool)
 
 var _buttons: Dictionary = {}  # window_id -> Button
 var _states: Dictionary = {}  # window_id -> state string
@@ -197,8 +198,26 @@ func _make_pinned_button(app_id: String, manifest: Dictionary) -> Button:
 	# Apply via ThemeManager helper so pinned sizing is correct
 	if tex != null and tm != null:
 		(tm as Object).apply_icon_to_button(b, tex)
+		if tm.has_method("get_pinned_icon_vector"):
+			b.custom_minimum_size = tm.get_pinned_icon_vector()
 	elif tex != null:
 		b.icon = tex
+		b.expand_icon = true
+		b.custom_minimum_size = Vector2(32, 32)
+	
+	b.gui_input.connect(func(event: InputEvent):
+		if event is InputEventMouseButton and event.button_index == MOUSE_BUTTON_RIGHT and event.pressed:
+			var menu := PopupMenu.new()
+			add_child(menu)
+			menu.add_item("Unpin from Taskbar", 1)
+			menu.id_pressed.connect(func(_id):
+				emit_signal("pin_app_requested", app_id, false)
+				menu.queue_free()
+			)
+			menu.popup_hide.connect(menu.queue_free)
+			menu.popup(Rect2(event.global_position, Vector2(160, 48)))
+	)
+
 	b.pressed.connect(func(): _on_pinned_pressed(app_id))
 
 	_style_button(b, false, false)
@@ -252,11 +271,21 @@ func _update_clock() -> void:
 
 func _show_context_menu(window_id: String, _button: Button, event: InputEventMouseButton) -> void:
 	var menu: PopupMenu = PopupMenu.new()
+	var app_id: String = String(_window_app.get(window_id, ""))
+	var is_pinned: bool = _pinned_buttons.has(app_id)
+	
 	add_child(menu)
 	menu.add_item("Focus", 1)
 	menu.add_item("Minimize", 2)
 	menu.add_separator()
+	if app_id != "":
+		if is_pinned:
+			menu.add_item("Unpin from Taskbar", 4)
+		else:
+			menu.add_item("Pin to Taskbar", 4)
+		menu.add_separator()
 	menu.add_item("Close", 3)
+	
 	menu.id_pressed.connect(
 		func(id: int):
 			match id:
@@ -266,10 +295,12 @@ func _show_context_menu(window_id: String, _button: Button, event: InputEventMou
 					emit_signal("window_action_requested", window_id, "minimize")
 				3:
 					emit_signal("window_action_requested", window_id, "close")
+				4:
+					emit_signal("pin_app_requested", app_id, not is_pinned)
 			menu.queue_free()
 	)
 	menu.popup_hide.connect(menu.queue_free)
-	menu.popup(Rect2(event.global_position, Vector2(120, 96)))
+	menu.popup(Rect2(event.global_position, Vector2(160, 128)))
 
 
 func apply_palette(palette: Dictionary) -> void:

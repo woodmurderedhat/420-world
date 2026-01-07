@@ -34,6 +34,12 @@ var _pending_icon_key: String = ""
 @onready var toast_label: Label = $Toast
 @onready var toast_timer: Timer = $ToastTimer
 
+# Theme Designer Vars
+const KEY_ORDER = ["bg", "panel", "text", "accent", "accent_hover", "accent_soft"]
+var _updating_themes := false
+@onready var theme_designer_container: VBoxContainer = $MainLayout/TabContainer/Themes/VBox/DesignerSection
+@onready var tm = get_node_or_null("/root/ThemeManager")
+
 
 func _ready() -> void:
 	mode_option.clear()
@@ -83,6 +89,9 @@ func _ready() -> void:
 
 	# Build window icons UI
 	_build_window_icons_ui()
+
+	if tm:
+		tm.theme_changed.connect(_on_theme_changed)
 
 
 func launch(_params: Dictionary) -> void:
@@ -134,6 +143,8 @@ func _sync_from_settings() -> void:
 	# Sync font path
 	var fpath := String(SettingsManager.get_value("ui.font", ""))
 	UIHelpers.safe_set_text(font_path, fpath)
+	
+	_build_theme_designer_ui()
 
 
 func _controls_ready() -> bool:
@@ -156,6 +167,7 @@ func _controls_ready() -> bool:
 		and is_instance_valid(pinned_apps_vbox)
 		and is_instance_valid(window_icons_section)
 		and is_instance_valid(font_path)
+		and is_instance_valid(theme_designer_container)
 	)
 
 
@@ -368,3 +380,165 @@ func _show_toast(text: String) -> void:
 	UIHelpers.safe_set_text(toast_label, text)
 	toast_label.visible = true
 	toast_timer.start(1.5)
+
+
+# --- Theme Designer Functions ---
+
+func _on_theme_changed(_name, _palette) -> void:
+	if not _updating_themes:
+		_build_theme_designer_ui()
+
+func _build_theme_designer_ui() -> void:
+	if not is_instance_valid(theme_designer_container):
+		return
+		
+	_updating_themes = true
+	
+	# Clear dynamic controls
+	for c in theme_designer_container.get_children():
+		c.queue_free()
+	
+	if not tm:
+		_updating_themes = false
+		return
+	
+	# --- Theme Selection ---
+	var theme_row = HBoxContainer.new()
+	var t_lbl = Label.new()
+	UIHelpers.safe_set_text(t_lbl, "Active Theme:")
+	t_lbl.custom_minimum_size.x = 120
+	theme_row.add_child(t_lbl)
+	
+	var t_opt = OptionButton.new()
+	var themes: Dictionary = tm.THEMES
+	var current = tm.current_theme
+	var idx = 0
+	var select_idx = 0
+	
+	for k in themes.keys():
+		t_opt.add_item(str(k).capitalize())
+		t_opt.set_item_metadata(idx, k)
+		if k == current:
+			select_idx = idx
+		idx += 1
+	
+	t_opt.selected = select_idx
+	t_opt.item_selected.connect(func(index):
+		var val = t_opt.get_item_metadata(index)
+		tm.set_theme(val)
+		# Also sync generic theme option
+		var theme_name := String(val)
+		theme_option.select(0 if theme_name == "light" else 1)
+	)
+	theme_row.add_child(t_opt)
+	
+	# Start Save Button
+	var save_btn = Button.new()
+	UIHelpers.safe_set_text(save_btn, "Save Custom Theme")
+	save_btn.pressed.connect(_on_save_theme_pressed)
+	theme_row.add_child(save_btn)
+	
+	theme_designer_container.add_child(theme_row)
+	theme_designer_container.add_child(HSeparator.new())
+	
+	# --- Colors ---
+	var pal: Dictionary = tm.get_palette()
+	var keys = pal.keys()
+	
+	# Sort keys based on KEY_ORDER
+	keys.sort_custom(func(a, b):
+		var ia = KEY_ORDER.find(a)
+		var ib = KEY_ORDER.find(b)
+		if ia == -1: ia = 999
+		if ib == -1: ib = 999
+		if ia != ib: return ia < ib
+		return a < b
+	)
+	
+	for k in keys:
+		var val = pal[k]
+		if typeof(val) != TYPE_COLOR:
+			continue
+			
+		var row = HBoxContainer.new()
+		var lbl = Label.new()
+		UIHelpers.safe_set_text(lbl, str(k).capitalize())
+		lbl.custom_minimum_size.x = 120
+		row.add_child(lbl)
+		
+		var picker = ColorPickerButton.new()
+		UIHelpers.safe_set_color(picker, val)
+		picker.custom_minimum_size.x = 60
+		picker.size_flags_horizontal = SIZE_EXPAND_FILL
+		picker.edit_alpha = false
+		picker.color_changed.connect(func(c):
+			_on_color_changed(k, c)
+		)
+		row.add_child(picker)
+		theme_designer_container.add_child(row)
+
+	theme_designer_container.add_child(HSeparator.new())
+
+	# --- Icon Scale ---
+	var scale_row = HBoxContainer.new()
+	var s_lbl = Label.new()
+	UIHelpers.safe_set_text(s_lbl, "Icon Scale")
+	s_lbl.custom_minimum_size.x = 120
+	scale_row.add_child(s_lbl)
+	
+	var s_slider = HSlider.new()
+	s_slider.min_value = 0.5
+	s_slider.max_value = 2.0
+	s_slider.step = 0.05
+	UIHelpers.safe_set_value(s_slider, tm.icon_scale)
+	s_slider.size_flags_horizontal = SIZE_EXPAND_FILL
+	
+	var s_val_lbl = Label.new()
+	UIHelpers.safe_set_text(s_val_lbl, "%.2f" % tm.icon_scale)
+	s_val_lbl.custom_minimum_size.x = 40
+	s_val_lbl.horizontal_alignment = HORIZONTAL_ALIGNMENT_RIGHT
+	
+	s_slider.value_changed.connect(func(val):
+		UIHelpers.safe_set_text(s_val_lbl, "%.2f" % val)
+		if tm: tm.set_icon_scale(val)
+		# Force theme resource rebuild on root
+		get_tree().root.set_theme(tm.build_basic_theme_resource(tm.current_theme))
+	)
+	
+	scale_row.add_child(s_slider)
+	scale_row.add_child(s_val_lbl)
+	theme_designer_container.add_child(scale_row)
+	
+	_updating_themes = false
+
+
+func _on_color_changed(key: String, color: Color) -> void:
+	if not tm: return
+	var new_pal = tm.get_palette().duplicate()
+	new_pal[key] = color
+	tm.set_palette_for_theme(tm.current_theme, new_pal)
+	# Force update of global resource on root
+	get_tree().root.set_theme(tm.build_basic_theme_resource(tm.current_theme))
+
+
+func _on_save_theme_pressed() -> void:
+	if not tm: return
+	var t: Theme = tm.build_basic_theme_resource(tm.current_theme)
+	var dir = DirAccess.open("user://")
+	if dir:
+		if not dir.dir_exists("themes"):
+			dir.make_dir("themes")
+		
+		var fname = "user://themes/%s.tres" % [String(tm.current_theme)]
+		var err = ResourceSaver.save(t, fname)
+		
+		# Also persist to ThemeManager JSON
+		if tm.has_method("save_custom_themes"):
+			tm.save_custom_themes()
+			
+		if err == OK:
+			Log.info("Settings: saved theme to %s and persisted config" % fname)
+			_show_toast("Theme Saved!")
+		else:
+			Log.error("Settings: Failed to save theme to %s" % fname)
+			_show_toast("Error saving theme!")

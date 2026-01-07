@@ -170,6 +170,19 @@ size_flags_horizontal = 3
 layout_mode = 2
 text = "Browse"
 
+[node name="Themes" type="ScrollContainer" parent="MainLayout/TabContainer"]
+visible = false
+layout_mode = 2
+
+[node name="VBox" type="VBoxContainer" parent="MainLayout/TabContainer/Themes"]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_constants/separation = 16
+
+[node name="DesignerSection" type="VBoxContainer" parent="MainLayout/TabContainer/Themes/VBox"]
+layout_mode = 2
+theme_override_constants/separation = 4
+
 [node name="Audio" type="ScrollContainer" parent="MainLayout/TabContainer"]
 visible = false
 layout_mode = 2
