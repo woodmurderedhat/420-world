@@ -1,0 +1,59 @@
+[gd_scene load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://scripts/game_window.gd" id="1_game_window"]
+
+[node name="GameWindow" type="Panel"]
+anchors_preset = 0
+offset_right = 640.0
+offset_bottom = 420.0
+script = ExtResource("1_game_window")
+
+[node name="TitleBar" type="HBoxContainer" parent="."]
+anchors_preset = 10
+offset_right = 640.0
+offset_bottom = 28.0
+size_flags_horizontal = 3
+
+[node name="Label" type="Label" parent="TitleBar"]
+text = "Window"
+size_flags_horizontal = 3
+
+[node name="MinButton" type="Button" parent="TitleBar"]
+text = "_"
+
+[node name="MaxButton" type="Button" parent="TitleBar"]
+text = "[]"
+
+[node name="FullButton" type="Button" parent="TitleBar"]
+text = "Full"
+
+[node name="CloseButton" type="Button" parent="TitleBar"]
+text = "X"
+
+[node name="ContentRoot" type="Control" parent="."]
+anchors_preset = 15
+offset_top = 28.0
+offset_right = 640.0
+offset_bottom = 420.0
+size_flags_horizontal = 3
+size_flags_vertical = 3
+
+[node name="InputBlocker" type="Control" parent="."]
+anchors_preset = 15
+offset_top = 28.0
+offset_right = 640.0
+offset_bottom = 420.0
+mouse_filter = 1
+visible = false
+
+[node name="ResizeHandle" type="Control" parent="."]
+anchors_preset = 8
+anchor_left = 1.0
+anchor_top = 1.0
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = -16.0
+offset_top = -16.0
+offset_right = 0.0
+offset_bottom = 0.0
+mouse_filter = 1

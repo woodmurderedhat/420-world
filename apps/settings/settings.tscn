@@ -1,0 +1,159 @@
+[gd_scene load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://apps/settings/settings.gd" id="1_settings"]
+
+[node name="Settings" type="Control"]
+anchors_preset = 15
+offset_right = 640.0
+offset_bottom = 460.0
+script = ExtResource("1_settings")
+
+[node name="VBox" type="VBoxContainer" parent="."]
+anchors_preset = 15
+offset_left = 12.0
+offset_top = 12.0
+offset_right = 628.0
+offset_bottom = 448.0
+theme_override_constants/separation = 8
+
+[node name="Title" type="Label" parent="VBox"]
+text = "Settings"
+
+[node name="DisplaySection" type="VBoxContainer" parent="VBox"]
+theme_override_constants/separation = 4
+
+[node name="DisplayLabel" type="Label" parent="VBox/DisplaySection"]
+text = "Display"
+
+[node name="ScaleMode" type="OptionButton" parent="VBox/DisplaySection"]
+
+[node name="ScaleFactor" type="HSlider" parent="VBox/DisplaySection"]
+min_value = 0.5
+max_value = 6.0
+step = 0.05
+value = 1.0
+
+[node name="FactorValue" type="Label" parent="VBox/DisplaySection"]
+text = "Scale: 1.00"
+
+[node name="Animations" type="CheckBox" parent="VBox/DisplaySection"]
+text = "Enable animations"
+
+[node name="CursorScale" type="HSlider" parent="VBox/DisplaySection"]
+min_value = 0.5
+max_value = 3.0
+step = 0.1
+value = 1.0
+
+[node name="CursorValue" type="Label" parent="VBox/DisplaySection"]
+text = "Cursor: 1.0x"
+
+[node name="ThemeSection" type="VBoxContainer" parent="VBox"]
+theme_override_constants/separation = 4
+
+[node name="ThemeLabel" type="Label" parent="VBox/ThemeSection"]
+text = "Theme"
+
+[node name="ThemeOption" type="OptionButton" parent="VBox/ThemeSection"]
+
+[node name="BackgroundSection" type="VBoxContainer" parent="VBox"]
+theme_override_constants/separation = 4
+
+[node name="BackgroundLabel" type="Label" parent="VBox/BackgroundSection"]
+text = "Background"
+
+[node name="BackgroundType" type="OptionButton" parent="VBox/BackgroundSection"]
+
+[node name="ColorA" type="ColorPickerButton" parent="VBox/BackgroundSection"]
+text = "Color A"
+edit_alpha = false
+
+[node name="ColorB" type="ColorPickerButton" parent="VBox/BackgroundSection"]
+text = "Color B"
+edit_alpha = false
+
+[node name="ImagePath" type="LineEdit" parent="VBox/BackgroundSection"]
+placeholder_text = "res://path/to/image.png"
+
+[node name="AudioSection" type="VBoxContainer" parent="VBox"]
+theme_override_constants/separation = 4
+
+[node name="AudioLabel" type="Label" parent="VBox/AudioSection"]
+text = "Audio"
+
+[node name="MasterSlider" type="HSlider" parent="VBox/AudioSection"]
+min_value = -40.0
+max_value = 6.0
+step = 0.5
+value = 0.0
+
+[node name="MasterValue" type="Label" parent="VBox/AudioSection"]
+text = "Master: 0.0 dB"
+
+[node name="MuteCheck" type="CheckBox" parent="VBox/AudioSection"]
+text = "Mute"
+
+[node name="LanguageSection" type="VBoxContainer" parent="VBox"]
+theme_override_constants/separation = 4
+
+[node name="DesktopSection" type="VBoxContainer" parent="VBox"]
+theme_override_constants/separation = 4
+
+[node name="DesktopLabel" type="Label" parent="VBox/DesktopSection"]
+text = "Desktop"
+
+[node name="PinnedAppsVBox" type="VBoxContainer" parent="VBox/DesktopSection"]
+size_flags_horizontal = 3
+
+[node name="WindowIconsSection" type="VBoxContainer" parent="VBox"]
+theme_override_constants/separation = 4
+
+[node name="WindowIconsLabel" type="Label" parent="VBox/WindowIconsSection"]
+text = "Window Controls Icons"
+
+[node name="IconPicker" type="FileDialog" parent="."]
+access = 1
+mode = 0
+filters = PoolStringArray( "*.svg;Scalable Vector", "*.png;PNG", "*;All Files" )
+
+[node name="FontRow" type="HBoxContainer" parent="VBox/WindowIconsSection"]
+custom_minimum_size = Vector2(0, 36)
+
+[node name="FontLabel" type="Label" parent="VBox/WindowIconsSection/FontRow"]
+text = "UI Font"
+
+[node name="FontPath" type="LineEdit" parent="VBox/WindowIconsSection/FontRow"]
+size_flags_horizontal = 3
+
+[node name="FontBrowse" type="Button" parent="VBox/WindowIconsSection/FontRow"]
+text = "Browse"
+
+[node name="FontPicker" type="FileDialog" parent="."]
+access = 1
+mode = 0
+filters = PoolStringArray("*.ttf;TrueType", "*.otf;OpenType", "*;All Files")
+
+[node name="LanguageLabel" type="Label" parent="VBox/LanguageSection"]
+text = "Language"
+
+[node name="LanguageOption" type="OptionButton" parent="VBox/LanguageSection"]
+
+[node name="Actions" type="HBoxContainer" parent="VBox"]
+theme_override_constants/separation = 8
+
+[node name="ApplyButton" type="Button" parent="VBox/Actions"]
+text = "Apply"
+
+[node name="ResetButton" type="Button" parent="VBox/Actions"]
+text = "Reset to Defaults"
+
+[node name="Toast" type="Label" parent="."]
+offset_left = 16.0
+offset_top = 420.0
+offset_right = 624.0
+offset_bottom = 444.0
+text = ""
+visible = false
+
+[node name="ToastTimer" type="Timer" parent="."]
+one_shot = true

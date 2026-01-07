@@ -1,0 +1,36 @@
+[gd_scene load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://apps/notepad/notepad.gd" id="1_notepad"]
+
+[node name="Notepad" type="Control"]
+anchors_preset = 15
+offset_right = 640.0
+offset_bottom = 400.0
+script = ExtResource("1_notepad")
+
+[node name="VBox" type="VBoxContainer" parent="."]
+anchors_preset = 15
+offset_left = 12.0
+offset_top = 12.0
+offset_right = 628.0
+offset_bottom = 388.0
+theme_override_constants/separation = 8
+
+[node name="Header" type="Label" parent="VBox"]
+text = "Notepad"
+
+[node name="TextArea" type="TextEdit" parent="VBox"]
+custom_minimum_size = Vector2(0, 260)
+placeholder_text = "Type your notes here..."
+
+[node name="Status" type="Label" parent="VBox"]
+text = "Ready"
+
+[node name="Actions" type="HBoxContainer" parent="VBox"]
+theme_override_constants/separation = 8
+
+[node name="SaveButton" type="Button" parent="VBox/Actions"]
+text = "Save Now"
+
+[node name="ClearButton" type="Button" parent="VBox/Actions"]
+text = "Clear"

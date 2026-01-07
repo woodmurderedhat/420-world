@@ -1,0 +1,53 @@
+[gd_scene load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://scripts/taskbar.gd" id="1_taskbar"]
+
+[node name="Taskbar" type="PanelContainer"]
+anchors_preset = 13
+anchor_top = 1.0
+anchor_bottom = 1.0
+offset_top = -44.0
+offset_right = 1080.0
+offset_bottom = 0.0
+script = ExtResource("1_taskbar")
+
+[node name="HBox" type="HBoxContainer" parent="."]
+anchors_preset = 15
+offset_right = 1080.0
+offset_bottom = 44.0
+size_flags_horizontal = 3
+size_flags_vertical = 3
+
+[node name="StartButton" type="Button" parent="HBox"]
+text = "Start"
+
+[node name="PinnedBox" type="HBoxContainer" parent="HBox"]
+custom_minimum_size = Vector2(40, 0)
+
+[node name="WindowsBox" type="HBoxContainer" parent="HBox"]
+size_flags_horizontal = 3
+
+[node name="RightSpacer" type="Control" parent="HBox"]
+size_flags_horizontal = 3
+
+[node name="RightBox" type="HBoxContainer" parent="HBox"]
+custom_minimum_size = Vector2(220, 0)
+size_flags_horizontal = 0
+
+[node name="TrayBox" type="HBoxContainer" parent="RightBox"]
+custom_minimum_size = Vector2(120, 0)
+
+[node name="VolumeButton" type="Button" parent="RightBox/TrayBox"]
+text = "🔊"
+custom_minimum_size = Vector2(36, 32)
+flat = true
+
+[node name="ClockLabel" type="Label" parent="RightBox"]
+text = "00:00"
+custom_minimum_size = Vector2(96, 0)
+align = 2
+
+[node name="ClockTimer" type="Timer" parent="."]
+wait_time = 1.0
+autostart = true
+one_shot = false

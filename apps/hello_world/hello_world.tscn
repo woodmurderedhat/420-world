@@ -1,0 +1,22 @@
+[gd_scene load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://apps/hello_world/hello_world.gd" id="1_hw"]
+
+[node name="HelloWorld" type="Control"]
+anchors_preset = 15
+offset_right = 600.0
+offset_bottom = 380.0
+script = ExtResource("1_hw")
+
+[node name="VBox" type="VBoxContainer" parent="."]
+anchors_preset = 15
+offset_right = 600.0
+offset_bottom = 380.0
+
+[node name="Label" type="Label" parent="VBox"]
+text = "Hello World!"
+
+[node name="Increment" type="Button" parent="VBox"]
+text = "Increment"
+
+[connection signal="pressed" from="VBox/Increment" to="." method="_on_increment"]

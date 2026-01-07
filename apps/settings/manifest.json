@@ -1,0 +1,8 @@
+{
+	"id": "settings",
+	"name": "Settings",
+	"entry_scene": "res://apps/settings/settings.tscn",
+	"icon": "res://assets/icons/settings.svg",
+	"version": "0.1",
+	"permissions": []
+}

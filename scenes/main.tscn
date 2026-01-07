@@ -1,0 +1,13 @@
+[gd_scene load_steps=3 format=3 uid="uid://b30y3jodxm0g8"]
+
+[ext_resource type="Script" uid="uid://ch03q3a3bv47j" path="res://scripts/desktop_scaler.gd" id="1_scaler"]
+[ext_resource type="PackedScene" path="res://scenes/desktop.tscn" id="2_desktop_scene"]
+
+[node name="Main" type="Control"]
+layout_mode = 3
+anchors_preset = 0
+offset_right = 1080.0
+offset_bottom = 720.0
+script = ExtResource("1_scaler")
+
+[node name="Desktop" parent="." instance=ExtResource("2_desktop_scene")]

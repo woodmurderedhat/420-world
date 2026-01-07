@@ -1,0 +1,11 @@
+{
+	"id": "notepad",
+	"name": "Notepad",
+	"entry_scene": "res://apps/notepad/notepad.tscn",
+	"icon": "res://assets/icons/notepad.svg",
+	"version": "0.1.0",
+	"description": "Simple note editor that persists text between sessions.",
+	"category": "Utilities",
+	"author": "Shell Team",
+	"permissions": ["filesystem.write"]
+}

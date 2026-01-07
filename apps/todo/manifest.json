@@ -1,0 +1,11 @@
+{
+	"id": "todo",
+	"name": "Todo",
+	"entry_scene": "res://apps/todo/todo.tscn",
+	"icon": "res://assets/icons/todo.svg",
+	"version": "0.1.0",
+	"description": "Track a simple checklist with persistence.",
+	"category": "Productivity",
+	"author": "Shell Team",
+	"permissions": ["filesystem.write"]
+}

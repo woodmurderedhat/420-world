@@ -1,0 +1,50 @@
+[gd_scene load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://scripts/start_menu.gd" id="1_start_menu"]
+
+[node name="StartMenu" type="PanelContainer"]
+anchors_preset = 2
+offset_left = 0.0
+offset_top = 0.0
+offset_right = 320.0
+offset_bottom = 400.0
+script = ExtResource("1_start_menu")
+
+[node name="VBox" type="VBoxContainer" parent="."]
+anchors_preset = 15
+offset_right = 320.0
+offset_bottom = 400.0
+size_flags_horizontal = 3
+size_flags_vertical = 3
+theme_override_constants/separation = 6
+
+[node name="ProfileBox" type="HBoxContainer" parent="VBox"]
+custom_minimum_size = Vector2(0, 48)
+
+[node name="Avatar" type="TextureRect" parent="VBox/ProfileBox"]
+expand = false
+rect_min_size = Vector2(40, 40)
+stretch_mode = 2
+
+[node name="ProfileName" type="Label" parent="VBox/ProfileBox"]
+text = "User"
+valign = 1
+
+[node name="Search" type="LineEdit" parent="VBox"]
+placeholder_text = "Search apps"
+
+[node name="AppsBox" type="VBoxContainer" parent="VBox"]
+size_flags_horizontal = 3
+size_flags_vertical = 3
+
+[node name="Footer" type="HBoxContainer" parent="VBox"]
+custom_minimum_size = Vector2(0, 48)
+size_flags_horizontal = 3
+
+[node name="RestartButton" type="Button" parent="VBox/Footer"]
+text = "Restart"
+custom_minimum_size = Vector2(88, 32)
+
+[node name="ExitButton" type="Button" parent="VBox/Footer"]
+text = "Exit"
+custom_minimum_size = Vector2(88, 32)

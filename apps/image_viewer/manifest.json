@@ -1,0 +1,11 @@
+{
+	"id": "image_viewer",
+	"name": "Image Viewer",
+	"entry_scene": "res://apps/image_viewer/image_viewer.tscn",
+	"icon": "res://assets/icons/image_viewer.svg",
+	"version": "0.1.0",
+	"description": "Preview a bundled image with aspect-fit scaling.",
+	"category": "Media",
+	"author": "Shell Team",
+	"permissions": []
+}

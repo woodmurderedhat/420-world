@@ -1,0 +1,33 @@
+name: Quality & Tests
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  static-checks:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.10'
+      - name: Install gdtoolkit
+        run: pip install gdtoolkit
+      - name: Run Lint
+        run: gdlint .
+      - name: Check Format
+        run: gdformat . --check
+
+  headless-tests:
+    runs-on: ubuntu-latest
+    container:
+      image: barichello/godot-ci:4.3 # Update tag when 4.5 image available
+    steps:
+      - uses: actions/checkout@v3
+      - name: Run Headless Tests
+        run: |
+          godot -v --headless --path . -s tests/comprehensive_headless.gd

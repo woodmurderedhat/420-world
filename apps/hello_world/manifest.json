@@ -1,0 +1,8 @@
+{
+	"id": "hello_world",
+	"name": "Hello World",
+	"entry_scene": "res://apps/hello_world/hello_world.tscn",
+	"icon": "res://assets/icons/hello.svg",
+	"version": "0.1",
+	"permissions": []
+}
