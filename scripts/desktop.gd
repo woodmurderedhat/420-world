@@ -90,7 +90,7 @@ func _update_background() -> void:
 			grad.gradient = Gradient.new()
 			grad.gradient.offsets = PackedFloat32Array([0.0, 1.0])
 			grad.gradient.colors = PackedColorArray([color_a, color_a])
-			background_layer.texture = grad
+			UIHelpers.safe_set_texture(background_layer, grad)
 		"gradient":
 			var grad: GradientTexture2D = GradientTexture2D.new()
 			grad.width = 64
@@ -99,12 +99,12 @@ func _update_background() -> void:
 			grad.fill_to = Vector2(0, 1)  # Vertical
 			grad.gradient = Gradient.new()
 			grad.gradient.colors = PackedColorArray([color_a, color_b])
-			background_layer.texture = grad
+			UIHelpers.safe_set_texture(background_layer, grad)
 		"image":
 			if image_path != "" and ResourceLoader.exists(image_path):
 				var tex = ResourceLoader.load(image_path)
 				if tex is Texture2D:
-					background_layer.texture = tex
+					UIHelpers.safe_set_texture(background_layer, tex)
 					return
 
 			# Fallback to solid if image invalid
@@ -115,7 +115,7 @@ func _update_background() -> void:
 			grad.gradient = Gradient.new()
 			grad.gradient.offsets = PackedFloat32Array([0.0, 1.0])
 			grad.gradient.colors = PackedColorArray([color_a, color_a])
-			background_layer.texture = grad
+			UIHelpers.safe_set_texture(background_layer, grad)
 
 
 func _get_icon_from_manifest(manifest: Dictionary) -> Texture2D:
@@ -243,7 +243,7 @@ func _rebuild_icons() -> void:
 		if app_id == "":
 			continue
 		var b := Button.new()
-		b.text = app_name
+		UIHelpers.safe_set_text(b, app_name)
 		b.size_flags_horizontal = Control.SIZE_SHRINK_CENTER
 		var tex := _get_icon_from_manifest(manifest)
 		var tm: Node = get_tree().root.get_node_or_null("/root/ThemeManager")
@@ -373,7 +373,7 @@ func _create_shortcut(app_id: String) -> void:
 		return
 	var b := Button.new()
 	b.name = app_id
-	b.text = String(manifest.get("name", app_id))
+	UIHelpers.safe_set_text(b, String(manifest.get("name", app_id)))
 	b.size_flags_horizontal = Control.SIZE_SHRINK_CENTER
 	var tex := _get_icon_from_manifest(manifest)
 	var tm: Node = get_tree().root.get_node_or_null("/root/ThemeManager")

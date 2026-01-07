@@ -25,7 +25,7 @@ func _ready() -> void:
 	sb.corner_radius_bottom_right = 6
 	_toast_panel.add_theme_stylebox_override("panel", sb)
 	_toast_label = Label.new()
-	_toast_label.text = ""
+	UIHelpers.safe_set_text(_toast_label, "")
 	_toast_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	_toast_label.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
 	_toast_panel.add_child(_toast_label)
@@ -39,7 +39,7 @@ func _ready() -> void:
 
 
 func show_toast(text: String, duration: float = 2.0) -> void:
-	_toast_label.text = text
+	UIHelpers.safe_set_text(_toast_label, text)
 	# Apply theme font if available
 	var tm: Node = get_tree().root.get_node_or_null("/root/ThemeManager")
 	if tm != null:

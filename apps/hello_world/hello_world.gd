@@ -2,7 +2,7 @@ extends AppBase
 
 var _counter: int = 0
 
-@onready var label: Label = $VBox/Label
+@onready var label: Label = $MainLayout/Label
 
 
 func launch(_params: Dictionary) -> void:
@@ -11,7 +11,7 @@ func launch(_params: Dictionary) -> void:
 
 func pause() -> void:
 	# Visible indication for MVP
-	label.text = "Paused (count=%d)" % _counter
+	UIHelpers.safe_set_text(label, "Paused (count=%d)" % _counter)
 
 
 func resume() -> void:
@@ -32,4 +32,4 @@ func _on_increment() -> void:
 
 
 func _update() -> void:
-	label.text = "Hello World! Count=%d" % _counter
+	UIHelpers.safe_set_text(label, "Hello World! Count=%d" % _counter)

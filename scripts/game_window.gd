@@ -51,7 +51,7 @@ func _ready() -> void:
 
 
 func set_title(text: String) -> void:
-	$TitleBar/Label.text = text
+	UIHelpers.safe_set_text($TitleBar/Label, text)
 
 
 func set_content(scene: PackedScene) -> Node:
@@ -255,4 +255,4 @@ func _apply_icon_or_text(btn: Button, key: String, fallback_text: String) -> voi
 			return
 	# fallback to simple text glyph
 	btn.icon = null
-	btn.text = fallback_text
+	UIHelpers.safe_set_text(btn, fallback_text)

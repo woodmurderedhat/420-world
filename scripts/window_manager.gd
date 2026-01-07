@@ -193,6 +193,7 @@ func close_window(id: String) -> void:
 	windows.erase(id)
 	if focused_id == id:
 		focused_id = ""
+	UIHelpers.safe_set_color(win, Color(0.95, 0.35, 0.35, 1))
 	emit_signal("window_closed", id)
 
 

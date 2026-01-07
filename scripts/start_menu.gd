@@ -82,7 +82,7 @@ func _unhandled_input(event: InputEvent) -> void:
 func _rebuild() -> void:
 	for c in apps_box.get_children():
 		c.queue_free()
-	var query: String = search_box.text.strip_edges().to_lower()
+	var query: String = UIHelpers.safe_text(search_box).strip_edges().to_lower()
 	if query != "":
 		_add_flat_results(query)
 		return
@@ -131,7 +131,7 @@ func _add_section(title: String, manifests: Array) -> void:
 	if manifests.is_empty():
 		return
 	var label := Label.new()
-	label.text = title
+	UIHelpers.safe_set_text(label, title)
 	label.add_theme_color_override("font_color", Color(0.8, 0.86, 0.94))
 	apps_box.add_child(label)
 	for manifest: Dictionary in manifests:
@@ -143,7 +143,7 @@ func _add_section(title: String, manifests: Array) -> void:
 		var b := Button.new()
 		# ensure keyboard-focusable
 		b.focus_mode = Control.FOCUS_ALL
-		b.text = app_name
+		UIHelpers.safe_set_text(b, app_name)
 		b.custom_minimum_size = Vector2(0, 32)
 		b.add_theme_constant_override("h_separation", 12)
 		b.add_theme_color_override("font_color", Color(0.9, 0.93, 0.95))

@@ -35,7 +35,7 @@ func _ready() -> void:
 
 
 func show_tooltip(text: String, global_pos: Vector2, duration: float = 3.0) -> void:
-	_label.text = text
+	UIHelpers.safe_set_text(_label, text)
 	_panel.visible = true
 
 	# Compute tooltip position with adaptive placement and viewport clamping

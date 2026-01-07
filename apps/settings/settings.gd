@@ -102,11 +102,11 @@ func _sync_from_settings() -> void:
 
 	var mode := String(SettingsManager.get_value("display.scale_mode", "integer"))
 	mode_option.select(0 if mode == "integer" else 1)
-	factor_slider.value = float(SettingsManager.get_value("display.scale_factor", 1.0))
-	_update_factor_label(factor_slider.value)
-	animations_check.button_pressed = bool(SettingsManager.get_value("ui.animations", true))
-	cursor_slider.value = float(SettingsManager.get_value("ui.cursor_scale", 1.0))
-	_update_cursor_label(cursor_slider.value)
+	UIHelpers.safe_set_value(factor_slider, float(SettingsManager.get_value("display.scale_factor", 1.0)))
+	_update_factor_label(UIHelpers.safe_value(factor_slider))
+	UIHelpers.safe_set_bool(animations_check, bool(SettingsManager.get_value("ui.animations", true)))
+	UIHelpers.safe_set_value(cursor_slider, float(SettingsManager.get_value("ui.cursor_scale", 1.0)))
+	_update_cursor_label(UIHelpers.safe_value(cursor_slider))
 	var theme_name := String(SettingsManager.get_value("ui.theme", "light"))
 	theme_option.select(0 if theme_name == "light" else 1)
 
@@ -115,15 +115,15 @@ func _sync_from_settings() -> void:
 		if String(bg_type.get_item_metadata(i)) == bg_t:
 			bg_type.select(i)
 			break
-	bg_color_a.color = Color(String(SettingsManager.get_value("background.color_a", "#12141a")))
-	bg_color_b.color = Color(String(SettingsManager.get_value("background.color_b", "#1e222b")))
-	bg_image_path.text = String(SettingsManager.get_value("background.image_path", ""))
+	UIHelpers.safe_set_color(bg_color_a, Color(String(SettingsManager.get_value("background.color_a", "#12141a"))))
+	UIHelpers.safe_set_color(bg_color_b, Color(String(SettingsManager.get_value("background.color_b", "#1e222b"))))
+	UIHelpers.safe_set_text(bg_image_path, String(SettingsManager.get_value("background.image_path", "")))
 	_on_bg_type_selected(bg_type.selected)
 
 	var master := float(SettingsManager.get_value("audio.master_db", 0.0))
-	master_slider.value = master
+	UIHelpers.safe_set_value(master_slider, master)
 	_update_master_label(master)
-	mute_check.button_pressed = bool(SettingsManager.get_value("audio.muted", false))
+	UIHelpers.safe_set_bool(mute_check, bool(SettingsManager.get_value("audio.muted", false)))
 	var lang := String(SettingsManager.get_value("ui.language", "en"))
 	language_option.select(0 if lang == "en" else 1)
 	_update_dirty_state()
@@ -133,7 +133,7 @@ func _sync_from_settings() -> void:
 	_sync_window_icons_ui()
 	# Sync font path
 	var fpath := String(SettingsManager.get_value("ui.font", ""))
-	font_path.text = fpath
+	UIHelpers.safe_set_text(font_path, fpath)
 
 
 func _controls_ready() -> bool:
@@ -177,14 +177,15 @@ func _build_pinned_apps_ui() -> void:
 			if t is Texture2D:
 				tex = t
 		var tex_rect: TextureRect = TextureRect.new()
-		tex_rect.texture = tex
+		UIHelpers.safe_set_texture(tex_rect, tex)
 		tex_rect.custom_minimum_size = Vector2(32, 32)
 		h.add_child(tex_rect)
 		var lbl := Label.new()
-		lbl.text = String(manifest.get("name", app_id))
+		UIHelpers.safe_set_text(lbl, String(manifest.get("name", app_id)))
 		h.add_child(lbl)
 		var chk: CheckBox = CheckBox.new()
-		chk.button_pressed = (app_id in saved_pins) or bool(manifest.get("pinned", true))
+		if is_instance_valid(chk):
+			UIHelpers.safe_set_bool(chk, (app_id in saved_pins) or bool(manifest.get("pinned", true)))
 		chk.name = app_id
 		h.add_child(chk)
 		pinned_apps_vbox.add_child(h)
@@ -200,13 +201,13 @@ func _build_window_icons_ui() -> void:
 		var h := HBoxContainer.new()
 		h.name = "icon_%s" % key
 		var lbl := Label.new()
-		lbl.text = key.capitalize()
+		UIHelpers.safe_set_text(lbl, key.capitalize())
 		h.add_child(lbl)
 		var le: LineEdit = LineEdit.new()
 		le.name = "le_%s" % key
 		h.add_child(le)
 		var btn: Button = Button.new()
-		btn.text = "Browse"
+		UIHelpers.safe_set_text(btn, "Browse")
 		btn.name = "btn_%s" % key
 		var cur_key: String = key
 		btn.pressed.connect(func(): _on_browse_icon(cur_key))
@@ -226,7 +227,7 @@ func _sync_window_icons_ui() -> void:
 		var key := h.name.trim_prefix("icon_")
 		var le := h.get_node_or_null("le_%s" % key)
 		if le != null:
-			le.text = String(icons.get(key, ""))
+			UIHelpers.safe_set_text(le, String(icons.get(key, "")))
 
 
 func _on_browse_icon(key: String) -> void:
@@ -241,12 +242,12 @@ func _on_icon_picked(path: String) -> void:
 	if h != null:
 		var le := h.get_node_or_null("le_%s" % _pending_icon_key)
 		if le != null:
-			le.text = path
+			UIHelpers.safe_set_text(le, path)
 	_pending_icon_key = ""
 
 
 func _on_font_picked(path: String) -> void:
-	font_path.text = path
+	UIHelpers.safe_set_text(font_path, path)
 
 
 func _on_mode_selected(_idx: int) -> void:
@@ -277,32 +278,30 @@ func _on_bg_type_selected(_idx: int) -> void:
 
 
 func _update_master_label(v: float) -> void:
-	master_value.text = "Master: %.1f dB" % v
+	UIHelpers.safe_set_text(master_value, "Master: %.1f dB" % v)
 
 
 func _apply() -> void:
 	var mode := "integer" if mode_option.selected == 0 else "fractional"
 	SettingsManager.set_value("display.scale_mode", mode)
-	SettingsManager.set_value("display.scale_factor", float(factor_slider.value))
-	SettingsManager.set_value("ui.animations", animations_check.button_pressed)
-	SettingsManager.set_value("ui.cursor_scale", float(cursor_slider.value))
+	SettingsManager.set_value("display.scale_factor", UIHelpers.safe_value(factor_slider))
+	SettingsManager.set_value("ui.animations", UIHelpers.safe_bool(animations_check))
+	SettingsManager.set_value("ui.cursor_scale", UIHelpers.safe_value(cursor_slider))
 
 	var xtheme := "light" if theme_option.selected == 0 else "dark"
 	SettingsManager.set_value("ui.theme", xtheme)
 
-	SettingsManager.set_value("audio.master_db", float(master_slider.value))
-	SettingsManager.set_value("audio.muted", mute_check.button_pressed)
+	SettingsManager.set_value("audio.master_db", UIHelpers.safe_value(master_slider))
+	SettingsManager.set_value("audio.muted", UIHelpers.safe_bool(mute_check))
 
 	var lang_meta: Variant = language_option.get_item_metadata(language_option.selected)
 	SettingsManager.set_value("ui.language", String(lang_meta))
 
 	SettingsManager.set_value("background.type", bg_type.get_selected_metadata())
-	if is_instance_valid(bg_color_a):
-		SettingsManager.set_value("background.color_a", bg_color_a.color.to_html())
-	if is_instance_valid(bg_color_b):
-		SettingsManager.set_value("background.color_b", bg_color_b.color.to_html())
+	SettingsManager.set_value("background.color_a", UIHelpers.safe_color_to_html(bg_color_a))
+	SettingsManager.set_value("background.color_b", UIHelpers.safe_color_to_html(bg_color_b))
 	if is_instance_valid(bg_image_path):
-		SettingsManager.set_value("background.image_path", bg_image_path.text)
+		SettingsManager.set_value("background.image_path", UIHelpers.safe_text(bg_image_path))
 	else:
 		SettingsManager.set_value("background.image_path", "")
 
@@ -313,7 +312,7 @@ func _apply() -> void:
 	var pins: Array = []
 	for h in pinned_apps_vbox.get_children():
 		for c in h.get_children():
-			if c is CheckBox and (c as CheckBox).button_pressed:
+			if c is CheckBox and UIHelpers.safe_bool(c):
 				pins.append(c.name)
 	SettingsManager.set_value("ui.pinned_apps", pins)
 
@@ -330,7 +329,7 @@ func _apply() -> void:
 			var key := h.name.trim_prefix("icon_")
 			var le := h.get_node_or_null("le_%s" % key)
 			if is_instance_valid(le):
-				var txt := String(le.text).strip_edges()
+				var txt := UIHelpers.safe_text(le).strip_edges()
 				if txt != "":
 					icon_map[key] = txt
 	SettingsManager.set_value("ui.window_icons", icon_map)
@@ -338,7 +337,7 @@ func _apply() -> void:
 	# Persist font selection
 	var fsel := ""
 	if is_instance_valid(font_path):
-		fsel = String(font_path.text).strip_edges()
+		fsel = UIHelpers.safe_text(font_path).strip_edges()
 	SettingsManager.set_value("ui.font", fsel)
 	# Apply immediately
 	var tm := get_tree().root.get_node_or_null("/root/ThemeManager")
@@ -353,11 +352,11 @@ func _reset_defaults() -> void:
 
 
 func _update_factor_label(v: float) -> void:
-	factor_value.text = "Scale: %.2fx" % v
+	UIHelpers.safe_set_text(factor_value, "Scale: %.2fx" % v)
 
 
 func _update_cursor_label(v: float) -> void:
-	cursor_value.text = "Cursor: %.2fx" % v
+	UIHelpers.safe_set_text(cursor_value, "Cursor: %.2fx" % v)
 
 
 func _update_dirty_state() -> void:
@@ -366,6 +365,6 @@ func _update_dirty_state() -> void:
 
 
 func _show_toast(text: String) -> void:
-	toast_label.text = text
+	UIHelpers.safe_set_text(toast_label, text)
 	toast_label.visible = true
 	toast_timer.start(1.5)

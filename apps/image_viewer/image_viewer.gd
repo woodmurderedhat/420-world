@@ -6,9 +6,9 @@ const IMAGES := {
 
 var _current_key: String = ""
 
-@onready var selector: OptionButton = $VBox/Selector
-@onready var preview: TextureRect = $VBox/Preview
-@onready var status_label: Label = $VBox/Status
+@onready var selector: OptionButton = $MainLayout/Selector
+@onready var preview: TextureRect = $MainLayout/Preview
+@onready var status_label: Label = $MainLayout/Status
 
 
 func _ready() -> void:
@@ -36,7 +36,7 @@ func load_state(data: Dictionary) -> void:
 			_apply_selection(desired)
 			return
 	if selector.item_count > 0:
-		_apply_selection(selector.get_item_text(selector.selected))
+		_apply_selection(UIHelpers.safe_get_selected_text(selector))
 
 
 func _on_selection(idx: int) -> void:
@@ -49,11 +49,11 @@ func _apply_selection(key: String) -> void:
 	if path != "" and ResourceLoader.exists(path):
 		var tex := ResourceLoader.load(path)
 		if tex is Texture2D:
-			preview.texture = tex
-			status_label.text = "Showing %s" % key
+			UIHelpers.safe_set_texture(preview, tex)
+			UIHelpers.safe_set_text(status_label, "Showing %s" % key)
 			return
-	preview.texture = null
-	status_label.text = "Image missing"
+	UIHelpers.safe_set_texture(preview, null)
+	UIHelpers.safe_set_text(status_label, "Image missing")
 
 
 func _find_item_index_by_text(text: String) -> int:

@@ -1,9 +1,9 @@
 extends AppBase
 
-@onready var text_area: TextEdit = $VBox/TextArea
-@onready var status_label: Label = $VBox/Status
-@onready var save_button: Button = $VBox/Actions/SaveButton
-@onready var clear_button: Button = $VBox/Actions/ClearButton
+@onready var text_area: TextEdit = $MainLayout/TextArea
+@onready var status_label: Label = $MainLayout/Status
+@onready var save_button: Button = $MainLayout/Actions/SaveButton
+@onready var clear_button: Button = $MainLayout/Actions/ClearButton
 
 
 func _ready() -> void:
@@ -14,12 +14,12 @@ func _ready() -> void:
 
 func save_state() -> Dictionary:
 	return {
-		"text": text_area.text,
+		"text": UIHelpers.safe_text(text_area),
 	}
 
 
 func load_state(data: Dictionary) -> void:
-	text_area.text = String(data.get("text", ""))
+	UIHelpers.safe_set_text(text_area, String(data.get("text", "")))
 	_update_status("Restored")
 
 
@@ -29,7 +29,7 @@ func _save_now() -> void:
 
 
 func _clear_text() -> void:
-	text_area.text = ""
+	UIHelpers.safe_set_text(text_area, "")
 	_flush_to_disk()
 	_update_status("Cleared")
 
@@ -41,4 +41,4 @@ func _flush_to_disk() -> void:
 
 
 func _update_status(text: String) -> void:
-	status_label.text = text
+	UIHelpers.safe_set_text(status_label, text)

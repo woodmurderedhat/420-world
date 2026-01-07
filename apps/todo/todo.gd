@@ -2,12 +2,12 @@ extends AppBase
 
 var _items: Array = []  # Array[Dictionary]
 
-@onready var input: LineEdit = $VBox/AddRow/Input
-@onready var add_button: Button = $VBox/AddRow/AddButton
-@onready var items_box: VBoxContainer = $VBox/List/ItemsBox
-@onready var status_label: Label = $VBox/Status
-@onready var clear_done_button: Button = $VBox/Actions/ClearDone
-@onready var clear_all_button: Button = $VBox/Actions/ClearAll
+@onready var input: LineEdit = $MainLayout/AddRow/Input
+@onready var add_button: Button = $MainLayout/AddRow/AddButton
+@onready var items_box: VBoxContainer = $MainLayout/List/ItemsBox
+@onready var status_label: Label = $MainLayout/Status
+@onready var clear_done_button: Button = $MainLayout/Actions/ClearDone
+@onready var clear_all_button: Button = $MainLayout/Actions/ClearAll
 
 
 func _ready() -> void:
@@ -38,7 +38,7 @@ func load_state(data: Dictionary) -> void:
 
 
 func _on_add() -> void:
-	var txt := input.text.strip_edges()
+	var txt := UIHelpers.safe_text(input).strip_edges()
 	if txt == "":
 		return
 	var item := {"text": txt, "done": false}
@@ -53,8 +53,9 @@ func _add_row(item: Dictionary) -> void:
 	var row := HBoxContainer.new()
 	row.add_theme_constant_override("separation", 6)
 	var box := CheckBox.new()
-	box.text = item.get("text", "")
-	box.button_pressed = item.get("done", false)
+	UIHelpers.safe_set_text(box, item.get("text", ""))
+	if is_instance_valid(box):
+		UIHelpers.safe_set_bool(box, item.get("done", false))
 	box.toggled.connect(
 		func(v: bool):
 			item["done"] = v
@@ -63,7 +64,7 @@ func _add_row(item: Dictionary) -> void:
 	)
 	row.add_child(box)
 	var del := Button.new()
-	del.text = "X"
+	UIHelpers.safe_set_text(del, "X")
 	del.focus_mode = Control.FOCUS_NONE
 	del.pressed.connect(
 		func():
@@ -80,7 +81,7 @@ func _clear_completed() -> void:
 	for child in items_box.get_children():
 		if child is HBoxContainer:
 			var cb := child.get_child(0)
-			if cb is CheckBox and cb.button_pressed:
+			if cb is CheckBox and is_instance_valid(cb) and UIHelpers.safe_bool(cb):
 				child.queue_free()
 	_items = _items.filter(func(it): return not bool(it.get("done", false)))
 	_update_status()
@@ -111,4 +112,4 @@ func _update_status() -> void:
 	for it in _items:
 		if bool(it.get("done", false)):
 			done += 1
-	status_label.text = "Tasks: %d (%d done)" % [total, done]
+	UIHelpers.safe_set_text(status_label, "Tasks: %d (%d done)" % [total, done])

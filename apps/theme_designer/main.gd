@@ -1,10 +1,10 @@
 extends Control
 
-@onready var tm = get_tree().root.get_node_or_null("/root/ThemeManager")
-@onready var controls_container = $VBox/Controls
-@onready var button_row = $VBox/Controls/ButtonRow
-@onready var apply_btn = $VBox/Controls/ButtonRow/ApplyButton
-@onready var save_btn = $VBox/Controls/ButtonRow/SaveButton
+@onready var tm = get_node_or_null("/root/ThemeManager")
+@onready var controls_container = $MainLayout/ScrollContainer/Controls
+@onready var button_row = $MainLayout/ButtonRow
+@onready var apply_btn = $MainLayout/ButtonRow/ApplyButton
+@onready var save_btn = $MainLayout/ButtonRow/SaveButton
 
 const KEY_ORDER = ["bg", "panel", "text", "accent", "accent_hover", "accent_soft"]
 
@@ -33,15 +33,14 @@ func _on_theme_changed(_name, _palette) -> void:
 func _rebuild_ui() -> void:
 	_updating_controls = true
 	
-	# Clear dynamic controls (everything except ButtonRow)
+	# Clear dynamic controls
 	for c in controls_container.get_children():
-		if c != button_row:
-			c.queue_free()
+		c.queue_free()
 	
 	# --- Theme Selection ---
 	var theme_row = HBoxContainer.new()
 	var t_lbl = Label.new()
-	t_lbl.text = "Theme:"
+	UIHelpers.safe_set_text(t_lbl, "Theme:")
 	theme_row.add_child(t_lbl)
 	
 	var t_opt = OptionButton.new()
@@ -88,12 +87,12 @@ func _rebuild_ui() -> void:
 			
 		var row = HBoxContainer.new()
 		var lbl = Label.new()
-		lbl.text = str(k).capitalize()
+		UIHelpers.safe_set_text(lbl, str(k).capitalize())
 		lbl.custom_minimum_size.x = 120
 		row.add_child(lbl)
 		
 		var picker = ColorPickerButton.new()
-		picker.color = val
+		UIHelpers.safe_set_color(picker, val)
 		picker.custom_minimum_size.x = 60
 		picker.size_flags_horizontal = SIZE_EXPAND_FILL
 		# Use deferred connection to avoid immediate signal if init triggers it? No, it's fine.
@@ -108,7 +107,7 @@ func _rebuild_ui() -> void:
 	# --- Icon Scale ---
 	var scale_row = HBoxContainer.new()
 	var s_lbl = Label.new()
-	s_lbl.text = "Icon Scale"
+	UIHelpers.safe_set_text(s_lbl, "Icon Scale")
 	s_lbl.custom_minimum_size.x = 120
 	scale_row.add_child(s_lbl)
 	
@@ -116,19 +115,19 @@ func _rebuild_ui() -> void:
 	s_slider.min_value = 0.5
 	s_slider.max_value = 2.0
 	s_slider.step = 0.05
-	s_slider.value = tm.icon_scale
+	UIHelpers.safe_set_value(s_slider, tm.icon_scale)
 	s_slider.size_flags_horizontal = SIZE_EXPAND_FILL
 	
 	var s_val_lbl = Label.new()
-	s_val_lbl.text = "%.2f" % tm.icon_scale
+	UIHelpers.safe_set_text(s_val_lbl, "%.2f" % tm.icon_scale)
 	s_val_lbl.custom_minimum_size.x = 40
 	s_val_lbl.horizontal_alignment = HORIZONTAL_ALIGNMENT_RIGHT
 	
 	s_slider.value_changed.connect(func(val):
-		s_val_lbl.text = "%.2f" % val
-		tm.set_icon_scale(val)
-		# Force theme resource rebuild
-		get_tree().set_theme(tm.build_basic_theme_resource(tm.current_theme))
+		UIHelpers.safe_set_text(s_val_lbl, "%.2f" % val)
+		if tm: tm.set_icon_scale(val)
+		# Force theme resource rebuild on root
+		get_tree().root.set_theme(tm.build_basic_theme_resource(tm.current_theme))
 	)
 	
 	scale_row.add_child(s_slider)
@@ -146,12 +145,12 @@ func _on_color_changed(key: String, color: Color) -> void:
 	var new_pal = tm.get_palette().duplicate()
 	new_pal[key] = color
 	tm.set_palette_for_theme(tm.current_theme, new_pal)
-	# Force update of global resource
-	get_tree().set_theme(tm.build_basic_theme_resource(tm.current_theme))
+		# Force update of global resource on root
+	get_tree().root.set_theme(tm.build_basic_theme_resource(tm.current_theme))
 
 func _on_apply_pressed() -> void:
 	if tm:
-		get_tree().set_theme(tm.build_basic_theme_resource(tm.current_theme))
+		get_tree().root.set_theme(tm.build_basic_theme_resource(tm.current_theme))
 		_flash_feedback("Applied!")
 
 func _on_save_pressed() -> void:
@@ -177,14 +176,14 @@ func _on_save_pressed() -> void:
 			_flash_feedback("Error!")
 
 func _flash_feedback(msg: String) -> void:
-	var original = save_btn.text
-	save_btn.text = msg
-	save_btn.disabled = true
+	var original = UIHelpers.safe_text(save_btn)
+	UIHelpers.safe_set_text(save_btn, msg)
+	UIHelpers.safe_set_disabled(save_btn, true)
 	var timer = get_tree().create_timer(1.5)
 	await timer.timeout
 	if is_instance_valid(save_btn):
-		save_btn.text = original
-		save_btn.disabled = false
+		UIHelpers.safe_set_text(save_btn, original)
+		UIHelpers.safe_set_disabled(save_btn, false)
 
 func _exit_tree() -> void:
 	# Clear runtime theme when leaving designer (optional)

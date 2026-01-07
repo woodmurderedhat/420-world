@@ -68,7 +68,7 @@ func add_window(window_id: String, app_id: String, title: String, icon: Texture2
 	b.custom_minimum_size = Vector2(145, 32)
 	_titles[window_id] = title
 	_icons[window_id] = icon
-	b.text = title
+	UIHelpers.safe_set_text(b, title)
 	b.text_overrun_behavior = TextServer.OVERRUN_TRIM_ELLIPSIS
 	b.alignment = HORIZONTAL_ALIGNMENT_LEFT
 	b.icon_alignment = HORIZONTAL_ALIGNMENT_LEFT
@@ -147,7 +147,7 @@ func _apply_button_state(window_id: String) -> void:
 	if not _buttons.has(window_id):
 		return
 	var b: Button = _buttons[window_id]
-	var title: String = String(_titles.get(window_id, b.text))
+	var title: String = String(_titles.get(window_id, UIHelpers.safe_text(b)))
 	var state: String = String(_states.get(window_id, "open"))
 	var icon: Texture2D = _icons.get(window_id, null)
 	# Use ThemeManager helper to apply icons consistently
@@ -156,9 +156,9 @@ func _apply_button_state(window_id: String) -> void:
 		(tm as Object).apply_icon_to_button(b, icon)
 	else:
 		b.icon = icon
-	b.text = title.substr(0, 16) + ("..." if title.length() > 16 else "")
-	b.button_pressed = (state == "focused")
-	b.disabled = false
+	UIHelpers.safe_set_text(b, title.substr(0, 16) + ("..." if title.length() > 16 else ""))
+	UIHelpers.safe_set_bool(b, (state == "focused"))
+	UIHelpers.safe_set_disabled(b, false)
 	var badge: Control = _badges.get(window_id, null)
 	if badge:
 		badge.visible = (state == "minimized")
@@ -169,14 +169,14 @@ func _apply_button_state(window_id: String) -> void:
 	_style_button(b, is_focused or is_open, true)
 
 	if is_focused:
-		b.modulate = Color(1, 1, 1, 1)
+		UIHelpers.safe_set_modulate(b, Color(1, 1, 1, 1))
 	else:
-		b.modulate = Color(0.9, 0.9, 0.9, 0.8)
+		UIHelpers.safe_set_modulate(b, Color(0.9, 0.9, 0.9, 0.8))
 
 
 func _make_pinned_button(app_id: String, manifest: Dictionary) -> Button:
 	var b: Button = Button.new()
-	b.text = ""
+	UIHelpers.safe_set_text(b, "")
 	b.tooltip_text = String(manifest.get("name", app_id))
 	b.flat = true
 	b.focus_mode = Control.FOCUS_NONE
@@ -247,7 +247,7 @@ func _wire_window_button_inputs(button: Button, window_id: String) -> void:
 func _update_clock() -> void:
 	if clock_label != null:
 		var time = Time.get_time_dict_from_system()
-		clock_label.text = "%02d:%02d" % [time.hour, time.minute]
+		UIHelpers.safe_set_text(clock_label, "%02d:%02d" % [time.hour, time.minute])
 
 
 func _show_context_menu(window_id: String, _button: Button, event: InputEventMouseButton) -> void:
@@ -312,7 +312,7 @@ func apply_palette(palette: Dictionary) -> void:
 	if clock_label:
 		var text_color: Color = palette.get("text", Color.WHITE)
 		clock_label.add_theme_color_override("font_color", text_color)
-		clock_label.text = clock_label.text  # keep current
+		UIHelpers.safe_set_text(clock_label, UIHelpers.safe_text(clock_label))
 
 	# Apply global font if ThemeManager provides one
 	var tm: Node = get_tree().root.get_node_or_null("/root/ThemeManager")

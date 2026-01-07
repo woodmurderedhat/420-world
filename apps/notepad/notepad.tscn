@@ -1,36 +1,54 @@
-[gd_scene load_steps=2 format=3]
+[gd_scene load_steps=2 format=3 uid="uid://notepad_scene_uid"]
 
 [ext_resource type="Script" path="res://apps/notepad/notepad.gd" id="1_notepad"]
 
 [node name="Notepad" type="Control"]
+layout_mode = 3
 anchors_preset = 15
-offset_right = 640.0
-offset_bottom = 400.0
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
 script = ExtResource("1_notepad")
 
-[node name="VBox" type="VBoxContainer" parent="."]
+[node name="MainLayout" type="VBoxContainer" parent="."]
+layout_mode = 1
 anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
 offset_left = 12.0
 offset_top = 12.0
-offset_right = 628.0
-offset_bottom = 388.0
+offset_right = -12.0
+offset_bottom = -12.0
+grow_horizontal = 2
+grow_vertical = 2
 theme_override_constants/separation = 8
 
-[node name="Header" type="Label" parent="VBox"]
+[node name="Header" type="Label" parent="MainLayout"]
+layout_mode = 2
 text = "Notepad"
+horizontal_alignment = 1
 
-[node name="TextArea" type="TextEdit" parent="VBox"]
-custom_minimum_size = Vector2(0, 260)
+[node name="TextArea" type="TextEdit" parent="MainLayout"]
+layout_mode = 2
+size_flags_vertical = 3
 placeholder_text = "Type your notes here..."
+wrap_mode = 1
 
-[node name="Status" type="Label" parent="VBox"]
-text = "Ready"
-
-[node name="Actions" type="HBoxContainer" parent="VBox"]
+[node name="Actions" type="HBoxContainer" parent="MainLayout"]
+layout_mode = 2
 theme_override_constants/separation = 8
+alignment = 2
 
-[node name="SaveButton" type="Button" parent="VBox/Actions"]
+[node name="SaveButton" type="Button" parent="MainLayout/Actions"]
+layout_mode = 2
 text = "Save Now"
 
-[node name="ClearButton" type="Button" parent="VBox/Actions"]
+[node name="ClearButton" type="Button" parent="MainLayout/Actions"]
+layout_mode = 2
 text = "Clear"
+
+[node name="Status" type="Label" parent="MainLayout"]
+layout_mode = 2
+text = "Ready"
+horizontal_alignment = 2

@@ -1,14 +1,14 @@
 Godot Engine v4.5.1.stable.official.f62fdbde1 - https://godotengine.org
 
 [Init #01] CoreRuntime ready (+0 ms)
-[Init #02] EventBus ready (+17 ms)
-[Init #03] SaveManager ready (+33 ms)
+[Init #02] EventBus ready (+16 ms)
+[Init #03] SaveManager ready (+30 ms)
 [SaveManager] Global save loaded (schema=1, keys=5)
-[Init #04] SettingsManager ready (+65 ms)
-[Init #05] AppRegistry ready (+81 ms)
-[Init #06] InventoryManager ready (+111 ms)
-[Init #07] ThemeManager ready (+124 ms)
-[Init] All core services ready in 124 ms
+[Init #04] SettingsManager ready (+46 ms)
+[Init #05] AppRegistry ready (+61 ms)
+[Init #06] InventoryManager ready (+81 ms)
+[Init #07] ThemeManager ready (+92 ms)
+[Init] All core services ready in 92 ms
 HEADLESS: Starting comprehensive test suite...
 TEST: Verifying Core Services...
 TEST: Verifying EventBus...

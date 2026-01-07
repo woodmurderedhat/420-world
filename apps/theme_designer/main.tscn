@@ -1,30 +1,55 @@
-[gd_scene load_steps=2 format=3]
+[gd_scene load_steps=2 format=3 uid="uid://theme_designer_uid"]
 
 [ext_resource type="Script" path="res://apps/theme_designer/main.gd" id="1"]
 
 [node name="ThemeDesigner" type="Control"]
-script = ExtResource( "1" )
-anchors_preset = 0
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+script = ExtResource("1")
 
-[node name="VBox" type="VBoxContainer" parent="."]
-margin_left = 12.0
-margin_top = 12.0
-margin_right = 12.0
-margin_bottom = 12.0
+[node name="MainLayout" type="VBoxContainer" parent="."]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = 12.0
+offset_top = 12.0
+offset_right = -12.0
+offset_bottom = -12.0
+grow_horizontal = 2
+grow_vertical = 2
+theme_override_constants/separation = 8
 
-[node name="Header" type="Label" parent="VBox"]
+[node name="Header" type="Label" parent="MainLayout"]
+layout_mode = 2
 text = "Theme Designer"
-align = 0
+horizontal_alignment = 1
 
+[node name="PreviewBox" type="VBoxContainer" parent="MainLayout"]
+layout_mode = 2
 
-[node name="PreviewBox" type="VBoxContainer" parent="VBox"]
+[node name="ScrollContainer" type="ScrollContainer" parent="MainLayout"]
+layout_mode = 2
+size_flags_vertical = 3
 
-[node name="Controls" type="VBoxContainer" parent="VBox"]
+[node name="Controls" type="VBoxContainer" parent="MainLayout/ScrollContainer"]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_constants/separation = 8
 
-[node name="ButtonRow" type="HBoxContainer" parent="VBox/Controls"]
+[node name="ButtonRow" type="HBoxContainer" parent="MainLayout"]
+layout_mode = 2
+theme_override_constants/separation = 8
+alignment = 2
 
-[node name="ApplyButton" type="Button" parent="VBox/Controls/ButtonRow"]
+[node name="ApplyButton" type="Button" parent="MainLayout/ButtonRow"]
+layout_mode = 2
 text = "Apply"
 
-[node name="SaveButton" type="Button" parent="VBox/Controls/ButtonRow"]
+[node name="SaveButton" type="Button" parent="MainLayout/ButtonRow"]
+layout_mode = 2
 text = "Save Theme"

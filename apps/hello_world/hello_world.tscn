@@ -1,22 +1,39 @@
-[gd_scene load_steps=2 format=3]
+[gd_scene load_steps=2 format=3 uid="uid://hello_world_scene_uid"]
 
 [ext_resource type="Script" path="res://apps/hello_world/hello_world.gd" id="1_hw"]
 
 [node name="HelloWorld" type="Control"]
+layout_mode = 3
 anchors_preset = 15
-offset_right = 600.0
-offset_bottom = 380.0
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
 script = ExtResource("1_hw")
 
-[node name="VBox" type="VBoxContainer" parent="."]
+[node name="MainLayout" type="VBoxContainer" parent="."]
+layout_mode = 1
 anchors_preset = 15
-offset_right = 600.0
-offset_bottom = 380.0
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = 12.0
+offset_top = 12.0
+offset_right = -12.0
+offset_bottom = -12.0
+grow_horizontal = 2
+grow_vertical = 2
+alignment = 1
 
-[node name="Label" type="Label" parent="VBox"]
+[node name="Label" type="Label" parent="MainLayout"]
+layout_mode = 2
 text = "Hello World!"
+horizontal_alignment = 1
+vertical_alignment = 1
 
-[node name="Increment" type="Button" parent="VBox"]
+[node name="Increment" type="Button" parent="MainLayout"]
+custom_minimum_size = Vector2(120, 0)
+layout_mode = 2
+size_flags_horizontal = 4
 text = "Increment"
 
-[connection signal="pressed" from="VBox/Increment" to="." method="_on_increment"]
+[connection signal="pressed" from="MainLayout/Increment" to="." method="_on_increment"]
