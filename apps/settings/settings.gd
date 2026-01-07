@@ -33,6 +33,7 @@ extends AppBase
 @onready var toast_label: Label = $Toast
 @onready var toast_timer: Timer = $ToastTimer
 
+
 func _ready() -> void:
 	mode_option.clear()
 	mode_option.add_item("Integer", 0)
@@ -82,13 +83,22 @@ func _ready() -> void:
 	# Build window icons UI
 	_build_window_icons_ui()
 
+
 func launch(_params: Dictionary) -> void:
 	_sync_from_settings()
+
 
 func resume() -> void:
 	_sync_from_settings()
 
+
 func _sync_from_settings() -> void:
+	# If UI node was freed or not yet in tree, skip syncing to avoid "previously freed" errors
+	if not is_inside_tree() or not is_instance_valid(self):
+		return
+	if not _controls_ready():
+		return
+
 	var mode := String(SettingsManager.get_value("display.scale_mode", "integer"))
 	mode_option.select(0 if mode == "integer" else 1)
 	factor_slider.value = float(SettingsManager.get_value("display.scale_factor", 1.0))
@@ -124,6 +134,30 @@ func _sync_from_settings() -> void:
 	var fpath := String(SettingsManager.get_value("ui.font", ""))
 	font_path.text = fpath
 
+
+func _controls_ready() -> bool:
+	return (
+		is_instance_valid(mode_option)
+		and is_instance_valid(factor_slider)
+		and is_instance_valid(factor_value)
+		and is_instance_valid(animations_check)
+		and is_instance_valid(cursor_slider)
+		and is_instance_valid(cursor_value)
+		and is_instance_valid(theme_option)
+		and is_instance_valid(bg_type)
+		and is_instance_valid(bg_color_a)
+		and is_instance_valid(bg_color_b)
+		and is_instance_valid(bg_image_path)
+		and is_instance_valid(master_slider)
+		and is_instance_valid(master_value)
+		and is_instance_valid(mute_check)
+		and is_instance_valid(language_option)
+		and is_instance_valid(pinned_apps_vbox)
+		and is_instance_valid(window_icons_section)
+		and is_instance_valid(font_path)
+	)
+
+
 func _build_pinned_apps_ui() -> void:
 	for c in pinned_apps_vbox.get_children():
 		c.queue_free()
@@ -154,6 +188,7 @@ func _build_pinned_apps_ui() -> void:
 		h.add_child(chk)
 		pinned_apps_vbox.add_child(h)
 
+
 func _build_window_icons_ui() -> void:
 	# keys: close, minimize, maximize, fullscreen
 	var keys := ["close", "minimize", "maximize", "fullscreen"]
@@ -177,6 +212,7 @@ func _build_window_icons_ui() -> void:
 		h.add_child(btn)
 		window_icons_section.add_child(h)
 
+
 func _sync_window_icons_ui() -> void:
 	var icons: Dictionary = SettingsManager.get_value("ui.window_icons", {}) as Dictionary
 	if typeof(icons) != TYPE_DICTIONARY:
@@ -191,11 +227,14 @@ func _sync_window_icons_ui() -> void:
 		if le != null:
 			le.text = String(icons.get(key, ""))
 
+
 var _pending_icon_key: String = ""
+
 
 func _on_browse_icon(key: String) -> void:
 	_pending_icon_key = key
 	icon_picker.popup_centered_ratio()
+
 
 func _on_icon_picked(path: String) -> void:
 	if _pending_icon_key == "":
@@ -207,25 +246,30 @@ func _on_icon_picked(path: String) -> void:
 			le.text = path
 	_pending_icon_key = ""
 
+
 func _on_font_picked(path: String) -> void:
 	font_path.text = path
-
 
 
 func _on_mode_selected(_idx: int) -> void:
 	# Do not auto-apply; wait for Apply.
 	pass
 
+
 func _on_factor_changed(v: float) -> void:
 	_update_factor_label(v)
 	_update_dirty_state()
+
 
 func _on_cursor_changed(v: float) -> void:
 	_update_cursor_label(v)
 	_update_dirty_state()
 
+
 func _on_master_changed(v: float) -> void:
 	_update_master_label(v)
+
+
 func _on_bg_type_selected(_idx: int) -> void:
 	var type := String(bg_type.get_selected_metadata())
 	bg_color_a.visible = (type == "solid" or type == "gradient")
@@ -233,8 +277,10 @@ func _on_bg_type_selected(_idx: int) -> void:
 	bg_image_path.visible = (type == "image")
 	_update_dirty_state()
 
+
 func _update_master_label(v: float) -> void:
 	master_value.text = "Master: %.1f dB" % v
+
 
 func _apply() -> void:
 	var mode := "integer" if mode_option.selected == 0 else "fractional"
@@ -242,13 +288,13 @@ func _apply() -> void:
 	SettingsManager.set_value("display.scale_factor", float(factor_slider.value))
 	SettingsManager.set_value("ui.animations", animations_check.button_pressed)
 	SettingsManager.set_value("ui.cursor_scale", float(cursor_slider.value))
-	
+
 	var xtheme := "light" if theme_option.selected == 0 else "dark"
 	SettingsManager.set_value("ui.theme", xtheme)
-	
+
 	SettingsManager.set_value("audio.master_db", float(master_slider.value))
 	SettingsManager.set_value("audio.muted", mute_check.button_pressed)
-	
+
 	var lang_meta: Variant = language_option.get_item_metadata(language_option.selected)
 	SettingsManager.set_value("ui.language", String(lang_meta))
 
@@ -256,7 +302,7 @@ func _apply() -> void:
 	SettingsManager.set_value("background.color_a", bg_color_a.color.to_html())
 	SettingsManager.set_value("background.color_b", bg_color_b.color.to_html())
 	SettingsManager.set_value("background.image_path", bg_image_path.text)
-	
+
 	_show_toast("Settings applied")
 	_update_dirty_state()
 
@@ -289,20 +335,25 @@ func _apply() -> void:
 	if tm != null:
 		tm.set_font(fsel)
 
+
 func _reset_defaults() -> void:
 	SettingsManager.reset_to_defaults()
 	_sync_from_settings()
 	_show_toast("Settings reset to defaults")
 
+
 func _update_factor_label(v: float) -> void:
 	factor_value.text = "Scale: %.2fx" % v
+
 
 func _update_cursor_label(v: float) -> void:
 	cursor_value.text = "Cursor: %.2fx" % v
 
+
 func _update_dirty_state() -> void:
 	# Placeholder hook for future disable/enable apply if dirty tracking needed.
 	pass
+
 
 func _show_toast(text: String) -> void:
 	toast_label.text = text

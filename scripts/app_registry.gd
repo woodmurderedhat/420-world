@@ -2,8 +2,8 @@ extends Node
 
 signal registry_changed
 
-const SHELL_VERSION := "0.1.0"
-const KNOWN_PERMISSIONS := {
+const SHELL_VERSION = "0.1.0"
+const KNOWN_PERMISSIONS = {
 	"filesystem.read": "Read user data",
 	"filesystem.write": "Write user data",
 	"inventory": "Access shared inventory",
@@ -11,42 +11,47 @@ const KNOWN_PERMISSIONS := {
 	"settings": "Modify settings",
 }
 
-var apps: Dictionary = {} # app_id -> manifest Dictionary
+var apps: Dictionary = {}  # app_id -> manifest Dictionary
 var recently_used: Array[String] = []
-const RECENT_LIMIT := 6
+const RECENT_LIMIT = 6
+
 
 func _ready() -> void:
-	var core := get_tree().root.get_node_or_null("/root/CoreRuntime")
+	var core: Node = get_tree().root.get_node_or_null("/root/CoreRuntime")
 	if core != null:
 		core.register_service("AppRegistry")
 	scan_for_apps()
 
+
 func scan_for_apps() -> void:
 	apps.clear()
-	var dir := DirAccess.open("res://apps")
+	var dir: DirAccess = DirAccess.open("res://apps")
 	if dir == null:
 		emit_signal("registry_changed")
 		return
 	dir.list_dir_begin()
-	var entry_name := dir.get_next()
+	var entry_name: String = dir.get_next()
 	while entry_name != "":
 		if dir.current_is_dir() and not entry_name.begins_with("."):
-			var manifest_path := "res://apps/%s/manifest.json" % entry_name
+			var manifest_path: String = "res://apps/%s/manifest.json" % entry_name
 			if FileAccess.file_exists(manifest_path):
-				var manifest := _load_manifest(manifest_path)
+				var manifest: Dictionary = _load_manifest(manifest_path)
 				if _is_manifest_valid(manifest):
 					apps[manifest["id"]] = manifest
 		entry_name = dir.get_next()
 	dir.list_dir_end()
 	emit_signal("registry_changed")
 
+
 func get_manifest(app_id: String) -> Dictionary:
 	return apps.get(app_id, {})
+
 
 func list_manifests() -> Array:
 	var out: Array = apps.values()
 	out.sort_custom(_compare_manifest_names)
 	return out
+
 
 func record_recent(app_id: String) -> void:
 	if not apps.has(app_id):
@@ -56,11 +61,14 @@ func record_recent(app_id: String) -> void:
 	if recently_used.size() > RECENT_LIMIT:
 		recently_used.resize(RECENT_LIMIT)
 
+
 func list_recent() -> Array[String]:
 	return recently_used.duplicate()
 
+
 func _compare_manifest_names(a: Dictionary, b: Dictionary) -> int:
 	return String(a.get("name", "")).naturalnocasecmp_to(String(b.get("name", "")))
+
 
 func _load_manifest(path: String) -> Dictionary:
 	var f: FileAccess = FileAccess.open(path, FileAccess.READ)
@@ -72,8 +80,8 @@ func _load_manifest(path: String) -> Dictionary:
 	if text.strip_edges() == "":
 		Log.warn("AppRegistry: empty manifest %s" % path)
 		return {}
-	var json := JSON.new()
-	var err := json.parse(text)
+	var json: JSON = JSON.new()
+	var err: int = json.parse(text)
 	if err != OK:
 		Log.warn("AppRegistry: invalid JSON in %s" % path)
 		return {}
@@ -82,6 +90,7 @@ func _load_manifest(path: String) -> Dictionary:
 		Log.warn("AppRegistry: invalid JSON in %s" % path)
 		return {}
 	return parsed
+
 
 func _is_manifest_valid(manifest: Dictionary) -> bool:
 	for key in ["id", "name", "entry_scene", "version"]:
@@ -112,33 +121,41 @@ func _is_manifest_valid(manifest: Dictionary) -> bool:
 	manifest["permissions"] = _sanitize_permissions(manifest.get("permissions", []))
 	if manifest["min_shell_version"] != "":
 		if _compare_semver(SHELL_VERSION, manifest["min_shell_version"]) < 0:
-			Log.warn("AppRegistry: %s requires shell >= %s (current %s)" % [manifest.get("id", "?"), manifest["min_shell_version"], SHELL_VERSION])
+			Log.warn(
+				(
+					"AppRegistry: %s requires shell >= %s (current %s)"
+					% [manifest.get("id", "?"), manifest["min_shell_version"], SHELL_VERSION]
+				)
+			)
 			manifest["min_shell_ok"] = false
 		else:
 			manifest["min_shell_ok"] = true
 	return true
+
 
 func _sanitize_permissions(value: Variant) -> Array:
 	var out: Array = []
 	if typeof(value) != TYPE_ARRAY:
 		return out
 	for p in value:
-		var pstr := String(p).strip_edges()
+		var pstr: String = String(p).strip_edges()
 		if pstr == "":
 			continue
 		out.append(pstr)
 	return out
 
+
 func _parse_semver(text: String) -> Array[int]:
-	var parts := text.split(".")
+	var parts: Array = text.split(".")
 	var out: Array[int] = [0, 0, 0]
 	for i in range(min(parts.size(), 3)):
 		out[i] = int(parts[i])
 	return out
 
+
 func _compare_semver(a: String, b: String) -> int:
-	var ap := _parse_semver(a)
-	var bp := _parse_semver(b)
+	var ap: Array[int] = _parse_semver(a)
+	var bp: Array[int] = _parse_semver(b)
 	for i in range(3):
 		if ap[i] == bp[i]:
 			continue

@@ -12,6 +12,7 @@ var _palette: Dictionary = {}
 
 var _input_enabled: bool = true
 
+
 func _ready() -> void:
 	_input_enabled = not OS.has_feature("headless")
 	# Work area is everything above the taskbar.
@@ -48,6 +49,7 @@ func _ready() -> void:
 		_apply_theme(_palette)
 		theme_mgr.theme_changed.connect(func(_name, palette): _apply_theme(palette))
 
+
 func _update_work_area() -> void:
 	var rect := Rect2(Vector2.ZERO, Vector2(1080, 720))
 	# Desktop is rendered in virtual coordinates (scaled by DesktopScaler).
@@ -55,23 +57,25 @@ func _update_work_area() -> void:
 	rect.size.y -= tb_h
 	window_manager.set_work_area(rect)
 
+
 func _on_setting_changed(key: StringName, _value: Variant) -> void:
 	if String(key).begins_with("background."):
 		_update_background()
+
 
 func _update_background() -> void:
 	var settings := get_tree().root.get_node_or_null("/root/SettingsManager")
 	if settings == null:
 		return
-	
+
 	var type: String = settings.get_value("background.type", "solid")
-	var color_a := Color(String(settings.get_value("background.color_a", "#12141a")))
-	var color_b := Color(String(settings.get_value("background.color_b", "#1e222b")))
+	var color_a: Color = Color(String(settings.get_value("background.color_a", "#12141a")))
+	var color_b: Color = Color(String(settings.get_value("background.color_b", "#1e222b")))
 	var image_path: String = settings.get_value("background.image_path", "")
-	
+
 	match type:
 		"solid":
-			var grad := GradientTexture2D.new()
+			var grad: GradientTexture2D = GradientTexture2D.new()
 			grad.width = 1
 			grad.height = 1
 			grad.fill = GradientTexture2D.FILL_LINEAR
@@ -80,11 +84,11 @@ func _update_background() -> void:
 			grad.gradient.colors = PackedColorArray([color_a, color_a])
 			background_layer.texture = grad
 		"gradient":
-			var grad := GradientTexture2D.new()
+			var grad: GradientTexture2D = GradientTexture2D.new()
 			grad.width = 64
 			grad.height = 64
 			grad.fill_from = Vector2(0, 0)
-			grad.fill_to = Vector2(0, 1) # Vertical
+			grad.fill_to = Vector2(0, 1)  # Vertical
 			grad.gradient = Gradient.new()
 			grad.gradient.colors = PackedColorArray([color_a, color_b])
 			background_layer.texture = grad
@@ -94,9 +98,9 @@ func _update_background() -> void:
 				if tex is Texture2D:
 					background_layer.texture = tex
 					return
-			
+
 			# Fallback to solid if image invalid
-			var grad := GradientTexture2D.new()
+			var grad: GradientTexture2D = GradientTexture2D.new()
 			grad.width = 1
 			grad.height = 1
 			grad.fill = GradientTexture2D.FILL_LINEAR
@@ -105,8 +109,9 @@ func _update_background() -> void:
 			grad.gradient.colors = PackedColorArray([color_a, color_a])
 			background_layer.texture = grad
 
+
 func _get_icon_from_manifest(manifest: Dictionary) -> Texture2D:
-	var icon_path := String(manifest.get("icon", ""))
+	var icon_path: String = String(manifest.get("icon", ""))
 	if icon_path == "":
 		icon_path = "res://assets/icons/default_app.svg"
 	if icon_path != "" and ResourceLoader.exists(icon_path):
@@ -115,8 +120,11 @@ func _get_icon_from_manifest(manifest: Dictionary) -> Texture2D:
 			return tex
 	return null
 
+
 func _on_window_opened(id: String) -> void:
-	var manifest: Dictionary = window_manager.windows[id].get("manifest", {}) if window_manager.windows.has(id) else {}
+	var manifest: Dictionary = (
+		window_manager.windows[id].get("manifest", {}) if window_manager.windows.has(id) else {}
+	)
 	var icon_tex: Texture2D = null
 	icon_tex = _get_icon_from_manifest(manifest)
 	var app_id := window_manager.get_window_app_id(id)
@@ -124,17 +132,22 @@ func _on_window_opened(id: String) -> void:
 	taskbar.set_window_state(id, window_manager.get_window_state(id))
 	_apply_theme_to_window(id)
 
+
 func _on_window_closed(id: String) -> void:
 	taskbar.remove_window(id)
+
 
 func _on_window_focused(id: String) -> void:
 	taskbar.set_window_state(id, window_manager.STATE_FOCUSED)
 
+
 func _on_window_minimized(id: String) -> void:
 	taskbar.set_window_state(id, window_manager.STATE_MINIMIZED)
 
+
 func _on_window_restored(id: String) -> void:
 	taskbar.set_window_state(id, window_manager.get_window_state(id))
+
 
 func _on_taskbar_window_action(window_id: String, action: StringName) -> void:
 	if not window_manager.windows.has(window_id):
@@ -151,28 +164,35 @@ func _on_taskbar_window_action(window_id: String, action: StringName) -> void:
 		_:
 			pass
 
+
 func _on_start_menu_toggled() -> void:
 	var gpos := start_button.get_global_position()
 	var gsize := start_button.size
 	start_menu.toggle(gpos, gsize)
 
+
 func _unhandled_input(event: InputEvent) -> void:
 	# Right-click on desktop -> show context menu
-	if event is InputEventMouseButton and event.button_index == MOUSE_BUTTON_RIGHT and event.pressed:
+	if (
+		event is InputEventMouseButton
+		and event.button_index == MOUSE_BUTTON_RIGHT
+		and event.pressed
+	):
 		var menu := PopupMenu.new()
 		add_child(menu)
 		menu.add_item("Refresh", 1)
 		menu.add_item("Change Theme", 2)
 		menu.add_item("Open Settings", 3)
-		menu.id_pressed.connect(func(id: int):
-			match id:
-				1:
-					_refresh_desktop()
-				2:
-					_cycle_theme()
-				3:
-					_open_settings()
-			menu.queue_free()
+		menu.id_pressed.connect(
+			func(id: int):
+				match id:
+					1:
+						_refresh_desktop()
+					2:
+						_cycle_theme()
+					3:
+						_open_settings()
+				menu.queue_free()
 		)
 		menu.popup(Rect2(event.position, Vector2(180, 96)))
 		return
@@ -193,8 +213,12 @@ func _unhandled_input(event: InputEvent) -> void:
 		return
 	if event is InputEventMouseButton and event.pressed:
 		var pos: Vector2 = event.position
-		if not start_menu.get_global_rect().has_point(pos) and not start_button.get_global_rect().has_point(pos):
+		if (
+			not start_menu.get_global_rect().has_point(pos)
+			and not start_button.get_global_rect().has_point(pos)
+		):
 			start_menu.hide_menu()
+
 
 func _rebuild_icons() -> void:
 	for c in icons_box.get_children():
@@ -213,9 +237,11 @@ func _rebuild_icons() -> void:
 		b.pressed.connect(func(): window_manager.open_app(app_id))
 		icons_box.add_child(b)
 
+
 func _on_registry_changed() -> void:
 	_rebuild_icons()
 	_update_pinned_apps()
+
 
 func _update_pinned_apps() -> void:
 	var manifests := AppRegistry.list_manifests()
@@ -225,7 +251,7 @@ func _update_pinned_apps() -> void:
 	var settings := get_tree().root.get_node_or_null("/root/SettingsManager")
 	var saved_pins: Array = []
 	if settings != null:
-		var val := settings.get_value("ui.pinned_apps", null)
+		var val: Variant = settings.get_value("ui.pinned_apps", null)
 		if typeof(val) == TYPE_ARRAY:
 			saved_pins = val.duplicate()
 
@@ -244,15 +270,18 @@ func _update_pinned_apps() -> void:
 				ids.append(app_id)
 	taskbar.set_pinned_apps(ids, lookup)
 
+
 func _toggle_start_menu() -> void:
 	var gpos := start_button.get_global_position()
 	var gsize := start_button.size
 	start_menu.toggle(gpos, gsize)
 
+
 func _close_focused_window() -> void:
 	var id := window_manager.get_focused_window_id()
 	if id != "":
 		window_manager.close_window(id)
+
 
 func _cycle_windows() -> void:
 	var ids: Array = []
@@ -260,13 +289,17 @@ func _cycle_windows() -> void:
 		ids.append(id)
 	if ids.is_empty():
 		return
-	ids.sort_custom(func(a, b): return window_manager.get_window_z_index(a) < window_manager.get_window_z_index(b))
+	ids.sort_custom(
+		func(a, b):
+			return window_manager.get_window_z_index(a) < window_manager.get_window_z_index(b)
+	)
 	var current := window_manager.get_focused_window_id()
 	var next_idx := 0
 	if current != "":
 		var idx := ids.find(current)
 		next_idx = (idx + 1) % ids.size()
 	window_manager.focus_window(String(ids[next_idx]))
+
 
 func _apply_theme(palette: Dictionary) -> void:
 	_palette = palette
@@ -279,6 +312,7 @@ func _apply_theme(palette: Dictionary) -> void:
 	for id in window_manager.windows.keys():
 		_apply_theme_to_window(String(id))
 
+
 func _apply_theme_to_window(id: String) -> void:
 	if not window_manager.windows.has(id):
 		return
@@ -286,13 +320,15 @@ func _apply_theme_to_window(id: String) -> void:
 	if win.has_method("apply_palette"):
 		win.apply_palette(_palette)
 
+
 func _refresh_desktop() -> void:
 	_rebuild_icons()
 	var log := get_tree().root.get_node_or_null("/root/Log")
 	if log != null:
 		log.info("Desktop: refresh requested")
 	else:
-		print("Desktop: refresh requested")
+		push_warning("Desktop: refresh requested (Log not available)")
+
 
 func _cycle_theme() -> void:
 	var settings := get_tree().root.get_node_or_null("/root/SettingsManager")
@@ -301,19 +337,21 @@ func _cycle_theme() -> void:
 		var next := "dark" if cur != "dark" else "light"
 		settings.set_value("ui.theme", next)
 	else:
-		print("No SettingsManager to change theme")
+		push_warning("No SettingsManager to change theme")
+
 
 func _open_settings() -> void:
 	if window_manager != null:
 		window_manager.open_app("settings")
 	else:
-		print("No WindowManager to open settings")
+		push_warning("No WindowManager to open settings")
+
 
 func _create_shortcut(app_id: String) -> void:
 	var manifest := AppRegistry.get_manifest(app_id)
 	if manifest.is_empty():
 		return
-	var existing := null
+	var existing: Node = null
 	for c in icons_box.get_children():
 		if c.name == app_id:
 			existing = c
@@ -328,24 +366,31 @@ func _create_shortcut(app_id: String) -> void:
 	if tex != null:
 		b.icon = tex
 	b.pressed.connect(func(): window_manager.open_app(app_id))
-	b.gui_input.connect(func(event: InputEvent):
-		if event is InputEventMouseButton and event.button_index == MOUSE_BUTTON_RIGHT and event.pressed:
-			var menu := PopupMenu.new()
-			add_child(menu)
-			menu.add_item("Pin to Taskbar", 1)
-			menu.add_item("Remove Shortcut", 2)
-			menu.id_pressed.connect(func(id: int):
-				match id:
-					1:
-						_pin_to_taskbar(app_id)
-					2:
-						b.queue_free()
-				menu.queue_free()
-			)
-			menu.popup(get_global_rect())
-			get_viewport().set_input_as_handled()
-		)
+	b.gui_input.connect(
+		func(event: InputEvent):
+			if (
+				event is InputEventMouseButton
+				and event.button_index == MOUSE_BUTTON_RIGHT
+				and event.pressed
+			):
+				var menu := PopupMenu.new()
+				add_child(menu)
+				menu.add_item("Pin to Taskbar", 1)
+				menu.add_item("Remove Shortcut", 2)
+				menu.id_pressed.connect(
+					func(id: int):
+						match id:
+							1:
+								_pin_to_taskbar(app_id)
+							2:
+								b.queue_free()
+						menu.queue_free()
+				)
+				menu.popup(get_global_rect())
+				get_viewport().set_input_as_handled()
+	)
 	icons_box.add_child(b)
+
 
 func _pin_to_taskbar(app_id: String) -> void:
 	var manifests := AppRegistry.list_manifests()
@@ -372,9 +417,10 @@ func _pin_to_taskbar(app_id: String) -> void:
 	else:
 		var sm := get_tree().root.get_node_or_null("/root/SaveManager")
 		if sm != null:
-			var g := sm.load_global()
+			var g: Dictionary = sm.load_global()
 			g["pinned_apps"] = ids
 			sm.save_global(g)
+
 
 func _on_tray_icon_pressed(id: String) -> void:
 	if id == "volume":
@@ -382,13 +428,15 @@ func _on_tray_icon_pressed(id: String) -> void:
 		if log != null:
 			log.info("Tray: volume pressed")
 		else:
-			print("Tray: volume pressed")
+			push_warning("Tray: volume pressed (Log not available)")
+
 
 func _on_session_exit() -> void:
 	var log := get_tree().root.get_node_or_null("/root/Log")
 	if log != null:
 		log.info("Session: exit requested")
 	get_tree().quit(0)
+
 
 func _on_session_restart() -> void:
 	var log := get_tree().root.get_node_or_null("/root/Log")

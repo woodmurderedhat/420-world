@@ -9,7 +9,7 @@ signal window_restored(id)
 
 @export var window_scene: PackedScene = preload("res://scenes/game_window.tscn")
 
-const KNOWN_PERMISSIONS := {
+const KNOWN_PERMISSIONS = {
 	"filesystem.read": "Read user data",
 	"filesystem.write": "Write user data",
 	"inventory": "Access shared inventory",
@@ -17,11 +17,11 @@ const KNOWN_PERMISSIONS := {
 	"settings": "Modify settings",
 }
 
-var windows: Dictionary = {} # id -> Dictionary
-var z_counter := 0
+var windows: Dictionary = {}  # id -> Dictionary
+var z_counter: int = 0
 var focused_id: String = ""
 
-var _last_rect_by_app: Dictionary = {} # app_id -> Rect2
+var _last_rect_by_app: Dictionary = {}  # app_id -> Rect2
 var _snap_preview: ColorRect = null
 var _snap_panel: PanelContainer = null
 var _snap_fill: ColorRect = null
@@ -36,8 +36,10 @@ const STATE_FOCUSED := "focused"
 const STATE_MINIMIZED := "minimized"
 const STATE_CLOSED := "closed"
 
+
 func set_work_area(rect: Rect2) -> void:
 	work_area = rect
+
 
 func open_app(app_id: String, params: Dictionary = {}) -> String:
 	var manifest := AppRegistry.get_manifest(app_id)
@@ -50,12 +52,21 @@ func open_app(app_id: String, params: Dictionary = {}) -> String:
 		Log.error("WindowManager: failed to load entry scene %s for %s" % [entry_path, app_id])
 		return ""
 	if not (scene_res is PackedScene):
-		Log.error("WindowManager: entry scene is not a PackedScene for %s (%s)" % [app_id, entry_path])
+		Log.error(
+			"WindowManager: entry scene is not a PackedScene for %s (%s)" % [app_id, entry_path]
+		)
 		return ""
 	return open_window(app_id, String(manifest.get("name", app_id)), scene_res, manifest, params)
 
-func open_window(app_id: String, title: String, scene: PackedScene, manifest: Dictionary = {}, params: Dictionary = {}) -> String:
-	var win: GameWindowPanel = window_scene.instantiate()
+
+func open_window(
+	app_id: String,
+	title: String,
+	scene: PackedScene,
+	manifest: Dictionary = {},
+	params: Dictionary = {}
+) -> String:
+	var win: GameWindowPanel = window_scene.instantiate() as GameWindowPanel
 	add_child(win)
 	_warn_permissions(manifest)
 
@@ -109,6 +120,7 @@ func open_window(app_id: String, title: String, scene: PackedScene, manifest: Di
 	emit_signal("window_opened", id)
 	return id
 
+
 func _focus_window(id: String) -> void:
 	if not windows.has(id):
 		return
@@ -123,14 +135,14 @@ func _focus_window(id: String) -> void:
 
 	if prev != "" and windows.has(prev):
 		windows[prev]["state"] = STATE_OPEN
-		var prev_win: GameWindowPanel = windows[prev]["node"]
+		var prev_win: GameWindowPanel = windows[prev]["node"] as GameWindowPanel
 		prev_win.set_focused(false)
 		var prev_app: Node = windows[prev].get("app_node")
 		if prev_app is AppBase:
 			prev_app.pause()
 
 	z_counter += 1
-	var win: GameWindowPanel = windows[id]["node"]
+	var win: GameWindowPanel = windows[id]["node"] as GameWindowPanel
 	win.z_index = z_counter
 	win.set_focused(true)
 	win.visible = true
@@ -143,14 +155,18 @@ func _focus_window(id: String) -> void:
 
 	emit_signal("window_focused", id)
 
+
 func focus_window(id: String) -> void:
 	_focus_window(id)
+
 
 func _on_request_focus(id: String) -> void:
 	_focus_window(id)
 
+
 func _on_request_close(id: String) -> void:
 	close_window(id)
+
 
 func close_window(id: String) -> void:
 	if not windows.has(id):
@@ -162,9 +178,11 @@ func close_window(id: String) -> void:
 		var sm := get_tree().root.get_node_or_null("/root/SaveManager")
 		if sm != null:
 			sm.save_app(app_id, {"state": state})
-	var win: GameWindowPanel = windows[id]["node"]
+	var win: GameWindowPanel = windows[id]["node"] as GameWindowPanel
 	if not windows[id].get("is_fullscreen", false):
-		var rect_to_store: Rect2 = windows[id].get("restore_rect", Rect2(win.global_position, win.size))
+		var rect_to_store: Rect2 = windows[id].get(
+			"restore_rect", Rect2(win.global_position, win.size)
+		)
 		_last_rect_by_app[app_id] = rect_to_store
 	win.queue_free()
 	windows.erase(id)
@@ -172,15 +190,17 @@ func close_window(id: String) -> void:
 		focused_id = ""
 	emit_signal("window_closed", id)
 
+
 func _on_request_minimize(id: String) -> void:
 	minimize_window(id)
+
 
 func minimize_window(id: String) -> void:
 	if not windows.has(id):
 		return
-	var win: GameWindowPanel = windows[id]["node"]
+	var win: GameWindowPanel = windows[id]["node"] as GameWindowPanel
 	windows[id]["restore_rect"] = Rect2(win.global_position, win.size)
-	
+
 	var perform_minimize := func():
 		win.visible = false
 		win.set_minimized(true)
@@ -198,23 +218,31 @@ func minimize_window(id: String) -> void:
 		win.pivot_offset = win.size / 2.0
 		var tween := create_tween()
 		tween.set_parallel(true)
-		tween.tween_property(win, "scale", Vector2(0.9, 0.9), 0.15).set_trans(Tween.TRANS_CUBIC).set_ease(Tween.EASE_OUT)
+		(
+			tween
+			. tween_property(win, "scale", Vector2(0.9, 0.9), 0.15)
+			. set_trans(Tween.TRANS_CUBIC)
+			. set_ease(Tween.EASE_OUT)
+		)
 		tween.tween_property(win, "modulate:a", 0.0, 0.15)
 		tween.chain().tween_callback(perform_minimize)
-		tween.tween_callback(func():
-			win.scale = Vector2.ONE
-			win.modulate.a = 1.0
+		tween.tween_callback(
+			func():
+				win.scale = Vector2.ONE
+				win.modulate.a = 1.0
 		)
 	else:
 		perform_minimize.call()
 
+
 func _on_request_restore(id: String) -> void:
 	restore_window(id)
+
 
 func restore_window(id: String) -> void:
 	if not windows.has(id):
 		return
-	var win: GameWindowPanel = windows[id]["node"]
+	var win: GameWindowPanel = windows[id]["node"] as GameWindowPanel
 	win.visible = true
 	win.set_minimized(false)
 	if windows[id].get("is_fullscreen", false):
@@ -225,7 +253,7 @@ func restore_window(id: String) -> void:
 		_restore_rect(id)
 	windows[id]["state"] = STATE_OPEN
 	_focus_window(id)
-	
+
 	var anim: bool = bool(SettingsManager.get_value("ui.animations", true))
 	if anim:
 		win.modulate.a = 0.0
@@ -233,44 +261,53 @@ func restore_window(id: String) -> void:
 		win.pivot_offset = win.size / 2.0
 		var tween := create_tween()
 		tween.set_parallel(true)
-		tween.tween_property(win, "scale", Vector2.ONE, 0.2).set_trans(Tween.TRANS_BACK).set_ease(Tween.EASE_OUT)
+		tween.tween_property(win, "scale", Vector2.ONE, 0.2).set_trans(Tween.TRANS_BACK).set_ease(
+			Tween.EASE_OUT
+		)
 		tween.tween_property(win, "modulate:a", 1.0, 0.2)
-	
+
 	emit_signal("window_restored", id)
+
 
 func get_window_title(id: String) -> String:
 	if not windows.has(id):
 		return ""
 	return String(windows[id].get("title", id))
 
+
 func get_window_app_id(id: String) -> String:
 	if not windows.has(id):
 		return ""
 	return String(windows[id].get("app_id", ""))
+
 
 func get_window_state(id: String) -> String:
 	if not windows.has(id):
 		return ""
 	return String(windows[id].get("state", ""))
 
+
 func get_window_z_index(id: String) -> int:
 	if not windows.has(id):
 		return -1
-	var win: GameWindowPanel = windows[id]["node"]
+	var win: GameWindowPanel = windows[id]["node"] as GameWindowPanel
 	return win.z_index
+
 
 func get_focused_window_id() -> String:
 	return focused_id
 
+
 func _on_request_maximize(id: String) -> void:
 	maximize_window(id)
+
 
 func maximize_window(id: String) -> void:
 	if not windows.has(id):
 		return
 	if windows[id].get("is_fullscreen", false):
 		return
-	var win: GameWindowPanel = windows[id]["node"]
+	var win: GameWindowPanel = windows[id]["node"] as GameWindowPanel
 	if windows[id].get("is_maximized", false):
 		_restore_rect(id)
 		_focus_window(id)
@@ -281,17 +318,20 @@ func maximize_window(id: String) -> void:
 	_apply_maximized_geometry(id)
 	_focus_window(id)
 
+
 func _apply_maximized_geometry(id: String) -> void:
 	if not windows.has(id):
 		return
-	var win: GameWindowPanel = windows[id]["node"]
+	var win: GameWindowPanel = windows[id]["node"] as GameWindowPanel
 	win.set_maximized(true)
 	win.set_fullscreen(false)
 	win.global_position = work_area.position
 	win.size = work_area.size
 
+
 func _on_request_fullscreen(id: String) -> void:
 	toggle_fullscreen_window(id)
+
 
 func toggle_fullscreen_window(id: String) -> void:
 	if not windows.has(id):
@@ -307,6 +347,7 @@ func toggle_fullscreen_window(id: String) -> void:
 	_apply_fullscreen_geometry(id)
 	_focus_window(id)
 
+
 func _apply_fullscreen_geometry(id: String) -> void:
 	if not windows.has(id):
 		return
@@ -317,11 +358,14 @@ func _apply_fullscreen_geometry(id: String) -> void:
 	win.global_position = rect.position
 	win.size = rect.size
 
+
 func _restore_rect(id: String) -> void:
 	if not windows.has(id):
 		return
 	var win: GameWindowPanel = windows[id]["node"]
-	var rect: Rect2 = windows[id].get("restore_rect", Rect2(work_area.position + Vector2(80, 80), win.size))
+	var rect: Rect2 = windows[id].get(
+		"restore_rect", Rect2(work_area.position + Vector2(80, 80), win.size)
+	)
 	win.set_maximized(false)
 	win.set_fullscreen(false)
 	win.global_position = rect.position
@@ -330,6 +374,7 @@ func _restore_rect(id: String) -> void:
 	windows[id]["is_maximized"] = false
 	windows[id]["is_fullscreen"] = false
 	windows[id]["restore_rect"] = Rect2(win.global_position, win.size)
+
 
 func _on_drag_finished(id: String, final_pos: Vector2, final_size: Vector2) -> void:
 	if not windows.has(id):
@@ -346,12 +391,14 @@ func _on_drag_finished(id: String, final_pos: Vector2, final_size: Vector2) -> v
 	_set_restore_rect_from_window(id)
 	_hide_snap_preview()
 
-func _on_drag_moved(id: String, cur_pos: Vector2, cur_size: Vector2) -> void:
+
+func _on_drag_moved(_id: String, cur_pos: Vector2, cur_size: Vector2) -> void:
 	var preview_rect: Variant = _calculate_snap_rect(cur_pos, cur_size)
 	if preview_rect:
 		_show_snap_preview(preview_rect)
 	else:
 		_hide_snap_preview()
+
 
 func _calculate_snap_rect(pos: Vector2, win_size: Vector2) -> Variant:
 	var wa: Rect2 = work_area
@@ -360,12 +407,16 @@ func _calculate_snap_rect(pos: Vector2, win_size: Vector2) -> Variant:
 		return Rect2(wa.position, Vector2(wa.size.x * 0.5, wa.size.y))
 	# Right snap
 	if pos.x + win_size.x >= wa.position.x + wa.size.x - SNAP_MARGIN:
-		return Rect2(Vector2(wa.position.x + wa.size.x * 0.5, wa.position.y), Vector2(wa.size.x * 0.5, wa.size.y))
+		return Rect2(
+			Vector2(wa.position.x + wa.size.x * 0.5, wa.position.y),
+			Vector2(wa.size.x * 0.5, wa.size.y)
+		)
 	# Center snap (top center)
 	if abs((pos.x + win_size.x * 0.5) - (wa.position.x + wa.size.x * 0.5)) <= CENTER_SNAP_MARGIN:
 		var target_size := wa.size * 0.7
 		return Rect2(wa.position + (wa.size - target_size) * 0.5, target_size)
 	return null
+
 
 func _show_snap_preview(rect: Rect2) -> void:
 	if _snap_panel == null:
@@ -390,15 +441,33 @@ func _show_snap_preview(rect: Rect2) -> void:
 	_snap_panel.modulate.a = 0.0
 	_snap_fill.modulate.a = 0.0
 	var t := create_tween()
-	t.tween_property(_snap_panel, "modulate:a", 1.0, 0.18).set_trans(Tween.TRANS_QUAD).set_ease(Tween.EASE_OUT)
-	t.parallel().tween_property(_snap_fill, "modulate:a", 1.0, 0.18).set_trans(Tween.TRANS_QUAD).set_ease(Tween.EASE_OUT)
+	t.tween_property(_snap_panel, "modulate:a", 1.0, 0.18).set_trans(Tween.TRANS_QUAD).set_ease(
+		Tween.EASE_OUT
+	)
+	(
+		t
+		. parallel()
+		. tween_property(_snap_fill, "modulate:a", 1.0, 0.18)
+		. set_trans(Tween.TRANS_QUAD)
+		. set_ease(Tween.EASE_OUT)
+	)
+
 
 func _hide_snap_preview() -> void:
 	if _snap_panel != null and _snap_panel.visible:
 		var t := create_tween()
-		t.tween_property(_snap_panel, "modulate:a", 0.0, 0.12).set_trans(Tween.TRANS_QUAD).set_ease(Tween.EASE_IN)
-		t.parallel().tween_property(_snap_fill, "modulate:a", 0.0, 0.12).set_trans(Tween.TRANS_QUAD).set_ease(Tween.EASE_IN)
+		t.tween_property(_snap_panel, "modulate:a", 0.0, 0.12).set_trans(Tween.TRANS_QUAD).set_ease(
+			Tween.EASE_IN
+		)
+		(
+			t
+			. parallel()
+			. tween_property(_snap_fill, "modulate:a", 0.0, 0.12)
+			. set_trans(Tween.TRANS_QUAD)
+			. set_ease(Tween.EASE_IN)
+		)
 		t.finished.connect(func(): _snap_panel.visible = false)
+
 
 func _apply_snap_if_needed(id: String) -> void:
 	if not windows.has(id):
@@ -425,11 +494,13 @@ func _apply_snap_if_needed(id: String) -> void:
 		_clamp_to_work_area(win)
 		windows[id]["restore_rect"] = Rect2(win.global_position, win.size)
 
+
 func _set_restore_rect_from_window(id: String) -> void:
 	if not windows.has(id):
 		return
 	var win: GameWindowPanel = windows[id]["node"]
 	windows[id]["restore_rect"] = Rect2(win.global_position, win.size)
+
 
 func _clamp_to_work_area(win: GameWindowPanel) -> void:
 	var pos := win.global_position
@@ -443,6 +514,7 @@ func _clamp_to_work_area(win: GameWindowPanel) -> void:
 	win.global_position = pos
 	win.size = win_size
 
+
 func _warn_permissions(manifest: Dictionary) -> void:
 	var perms: Array = manifest.get("permissions", [])
 	if perms.is_empty():
@@ -451,6 +523,8 @@ func _warn_permissions(manifest: Dictionary) -> void:
 	for p in perms:
 		var pname := String(p)
 		if not KNOWN_PERMISSIONS.has(pname):
-			Log.warn("Permissions: %s requested unknown permission '%s' (not enforced)" % [app_id, pname])
+			Log.warn(
+				"Permissions: %s requested unknown permission '%s' (not enforced)" % [app_id, pname]
+			)
 		else:
 			Log.info("[Permissions] %s requests %s (not enforced)" % [app_id, pname])

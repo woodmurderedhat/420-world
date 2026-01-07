@@ -17,35 +17,35 @@ offset_right = 1080.0
 offset_bottom = 44.0
 size_flags_horizontal = 3
 size_flags_vertical = 3
+custom_constants/separation = 6
 
 [node name="StartButton" type="Button" parent="HBox"]
 text = "Start"
 
 [node name="PinnedBox" type="HBoxContainer" parent="HBox"]
-custom_minimum_size = Vector2(40, 0)
+custom_minimum_size = Vector2(72, 0)
 
 [node name="WindowsBox" type="HBoxContainer" parent="HBox"]
+custom_minimum_size = Vector2(200, 0)
 size_flags_horizontal = 3
 
 [node name="RightSpacer" type="Control" parent="HBox"]
 size_flags_horizontal = 3
 
-[node name="RightBox" type="HBoxContainer" parent="HBox"]
-custom_minimum_size = Vector2(220, 0)
-size_flags_horizontal = 0
-
-[node name="TrayBox" type="HBoxContainer" parent="RightBox"]
+[node name="TrayBox" type="HBoxContainer" parent="HBox"]
 custom_minimum_size = Vector2(120, 0)
+size_flags_horizontal = 1
 
-[node name="VolumeButton" type="Button" parent="RightBox/TrayBox"]
+[node name="VolumeButton" type="Button" parent="HBox/TrayBox"]
 text = "🔊"
 custom_minimum_size = Vector2(36, 32)
 flat = true
 
-[node name="ClockLabel" type="Label" parent="RightBox"]
+[node name="ClockLabel" type="Label" parent="HBox"]
 text = "00:00"
 custom_minimum_size = Vector2(96, 0)
 align = 2
+size_flags_horizontal = 1
 
 [node name="ClockTimer" type="Timer" parent="."]
 wait_time = 1.0

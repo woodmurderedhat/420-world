@@ -9,21 +9,22 @@ signal app_launch_requested(app_id: String)
 @onready var start_button: Button = $HBox/StartButton
 @onready var pinned_box: HBoxContainer = $HBox/PinnedBox
 @onready var windows_box: HBoxContainer = $HBox/WindowsBox
-@onready var tray_box: HBoxContainer = get_node_or_null("HBox/RightBox/TrayBox") as HBoxContainer
-@onready var clock_label: Label = get_node_or_null("HBox/RightBox/ClockLabel") as Label
+@onready var tray_box: HBoxContainer = get_node_or_null("HBox/TrayBox") as HBoxContainer
+@onready var clock_label: Label = get_node_or_null("HBox/ClockLabel") as Label
 @onready var _clock_timer: Timer = get_node_or_null("ClockTimer") as Timer
-@onready var volume_button: Button = get_node_or_null("HBox/RightBox/TrayBox/VolumeButton") as Button
+@onready var volume_button: Button = get_node_or_null("HBox/TrayBox/VolumeButton") as Button
 
-var _buttons: Dictionary = {} # window_id -> Button
-var _states: Dictionary = {} # window_id -> state string
-var _titles: Dictionary = {} # window_id -> title
-var _icons: Dictionary = {} # window_id -> Texture2D
-var _badges: Dictionary = {} # window_id -> Control
-var _window_app: Dictionary = {} # window_id -> app_id
-var _app_windows: Dictionary = {} # app_id -> Array[String]
-var _pinned_buttons: Dictionary = {} # app_id -> Button
-var _manifest_lookup: Dictionary = {} # app_id -> manifest
+var _buttons: Dictionary = {}  # window_id -> Button
+var _states: Dictionary = {}  # window_id -> state string
+var _titles: Dictionary = {}  # window_id -> title
+var _icons: Dictionary = {}  # window_id -> Texture2D
+var _badges: Dictionary = {}  # window_id -> Control
+var _window_app: Dictionary = {}  # window_id -> app_id
+var _app_windows: Dictionary = {}  # app_id -> Array[String]
+var _pinned_buttons: Dictionary = {}  # app_id -> Button
+var _manifest_lookup: Dictionary = {}  # app_id -> manifest
 var _palette: Dictionary = {}
+
 
 func _ready() -> void:
 	start_button.pressed.connect(func(): emit_signal("start_menu_toggled"))
@@ -41,17 +42,19 @@ func _ready() -> void:
 		volume_button.pressed.connect(func(): emit_signal("tray_icon_pressed", "volume"))
 	set_process(false)
 
+
 func set_pinned_apps(app_ids: Array, manifest_lookup: Dictionary = {}) -> void:
 	for b in _pinned_buttons.values():
 		b.queue_free()
 	_pinned_buttons.clear()
 	_manifest_lookup = manifest_lookup
 	for raw_id in app_ids:
-		var app_id := String(raw_id)
+		var app_id: String = String(raw_id)
 		var manifest: Dictionary = manifest_lookup.get(app_id, {})
-		var btn := _make_pinned_button(app_id, manifest)
+		var btn: Button = _make_pinned_button(app_id, manifest)
 		pinned_box.add_child(btn)
 		_pinned_buttons[app_id] = btn
+
 
 func add_window(window_id: String, app_id: String, title: String, icon: Texture2D = null) -> void:
 	if _buttons.has(window_id):
@@ -59,7 +62,7 @@ func add_window(window_id: String, app_id: String, title: String, icon: Texture2
 		_icons[window_id] = icon
 		_apply_button_state(window_id)
 		return
-	var b := Button.new()
+	var b: Button = Button.new()
 	b.toggle_mode = true
 	b.custom_minimum_size = Vector2(0, 32)
 	_titles[window_id] = title
@@ -83,6 +86,7 @@ func add_window(window_id: String, app_id: String, title: String, icon: Texture2
 	b.add_child(_badges[window_id])
 	_apply_button_state(window_id)
 
+
 func remove_window(window_id: String) -> void:
 	if not _buttons.has(window_id):
 		return
@@ -99,8 +103,10 @@ func remove_window(window_id: String) -> void:
 		if _app_windows[app_id].is_empty():
 			_app_windows.erase(app_id)
 
+
 func set_focused(window_id: String) -> void:
 	set_window_state(window_id, "focused")
+
 
 func set_window_state(window_id: String, state: String) -> void:
 	if not _buttons.has(window_id):
@@ -108,8 +114,9 @@ func set_window_state(window_id: String, state: String) -> void:
 	_states[window_id] = state
 	_apply_button_state(window_id)
 
+
 func _on_button_pressed(window_id: String) -> void:
-	var state := String(_states.get(window_id, ""))
+	var state: String = String(_states.get(window_id, ""))
 	match state:
 		"minimized":
 			emit_signal("window_action_requested", window_id, "restore")
@@ -117,6 +124,7 @@ func _on_button_pressed(window_id: String) -> void:
 			emit_signal("window_action_requested", window_id, "minimize")
 		_:
 			emit_signal("window_action_requested", window_id, "focus")
+
 
 func _on_pinned_pressed(app_id: String) -> void:
 	var existing: Array = _app_windows.get(app_id, []) as Array
@@ -127,12 +135,13 @@ func _on_pinned_pressed(app_id: String) -> void:
 		return
 	emit_signal("app_launch_requested", app_id)
 
+
 func _apply_button_state(window_id: String) -> void:
 	if not _buttons.has(window_id):
 		return
 	var b: Button = _buttons[window_id]
-	var title := String(_titles.get(window_id, b.text))
-	var state := String(_states.get(window_id, "open"))
+	var title: String = String(_titles.get(window_id, b.text))
+	var state: String = String(_states.get(window_id, "open"))
 	var icon: Texture2D = _icons.get(window_id, null)
 	b.icon = icon
 	b.text = title.substr(0, 16) + ("..." if title.length() > 16 else "")
@@ -141,10 +150,10 @@ func _apply_button_state(window_id: String) -> void:
 	var badge: Control = _badges.get(window_id, null)
 	if badge:
 		badge.visible = (state == "minimized")
-	
+
 	b.flat = false
 	var is_open := state != "closed" and state != "minimized"
-	var is_focused := (state == "focused")
+	var is_focused := state == "focused"
 	_style_button(b, is_focused or is_open, true)
 
 	if is_focused:
@@ -152,17 +161,18 @@ func _apply_button_state(window_id: String) -> void:
 	else:
 		b.modulate = Color(0.9, 0.9, 0.9, 0.8)
 
+
 func _make_pinned_button(app_id: String, manifest: Dictionary) -> Button:
-	var b := Button.new()
-	b.text = "" 
+	var b: Button = Button.new()
+	b.text = ""
 	b.tooltip_text = String(manifest.get("name", app_id))
 	b.custom_minimum_size = Vector2(32, 32)
 	b.flat = true
 	b.focus_mode = Control.FOCUS_NONE
 	if manifest.has("icon") and typeof(manifest["icon"]) == TYPE_STRING:
-		var icon_path := String(manifest["icon"])
+		var icon_path: String = String(manifest["icon"])
 		if icon_path != "" and ResourceLoader.exists(icon_path):
-			var tex := ResourceLoader.load(icon_path)
+			var tex: Resource = ResourceLoader.load(icon_path)
 			if tex is Texture2D:
 				b.icon = tex
 		else:
@@ -170,18 +180,21 @@ func _make_pinned_button(app_id: String, manifest: Dictionary) -> Button:
 				b.icon = ResourceLoader.load("res://assets/icons/default_app.svg")
 	b.expand_icon = true
 	b.pressed.connect(func(): _on_pinned_pressed(app_id))
-	
+
 	_style_button(b, false, false)
 
 	# TooltipManager (if autoload present)
-	var tt := get_tree().root.get_node_or_null("/root/TooltipManager")
+	var tt: Node = get_tree().root.get_node_or_null("/root/TooltipManager")
 	if tt != null:
-		b.mouse_entered.connect(func(): tt.show_tooltip(String(manifest.get("name", app_id)), b.get_global_position()))
+		b.mouse_entered.connect(
+			func(): tt.show_tooltip(String(manifest.get("name", app_id)), b.get_global_position())
+		)
 		b.mouse_exited.connect(func(): tt.hide_tooltip())
 	return b
 
+
 func _make_badge() -> Control:
-	var c := ColorRect.new()
+	var c: ColorRect = ColorRect.new()
 	c.color = Color(0.95, 0.35, 0.35, 1)
 	c.set_anchors_preset(Control.PRESET_TOP_RIGHT)
 	c.offset_left = -14.0
@@ -191,14 +204,25 @@ func _make_badge() -> Control:
 	c.visible = false
 	return c
 
+
 func _wire_window_button_inputs(button: Button, window_id: String) -> void:
-	button.gui_input.connect(func(event: InputEvent):
-		if event is InputEventMouseButton and event.button_index == MOUSE_BUTTON_MIDDLE and event.pressed:
-			emit_signal("window_action_requested", window_id, "close")
-			get_viewport().set_input_as_handled()
-		elif event is InputEventMouseButton and event.button_index == MOUSE_BUTTON_RIGHT and event.pressed:
-			_show_context_menu(window_id, button, event)
+	button.gui_input.connect(
+		func(event: InputEvent):
+			if (
+				event is InputEventMouseButton
+				and event.button_index == MOUSE_BUTTON_MIDDLE
+				and event.pressed
+			):
+				emit_signal("window_action_requested", window_id, "close")
+				get_viewport().set_input_as_handled()
+			elif (
+				event is InputEventMouseButton
+				and event.button_index == MOUSE_BUTTON_RIGHT
+				and event.pressed
+			):
+				_show_context_menu(window_id, button, event)
 	)
+
 
 func _update_clock() -> void:
 	# Headless-safe placeholder clock to avoid OS datetime API differences
@@ -207,34 +231,36 @@ func _update_clock() -> void:
 
 
 func _show_context_menu(window_id: String, _button: Button, event: InputEventMouseButton) -> void:
-	var menu := PopupMenu.new()
+	var menu: PopupMenu = PopupMenu.new()
 	add_child(menu)
 	menu.add_item("Focus", 1)
 	menu.add_item("Minimize", 2)
 	menu.add_separator()
 	menu.add_item("Close", 3)
-	menu.id_pressed.connect(func(id: int):
-		match id:
-			1:
-				emit_signal("window_action_requested", window_id, "focus")
-			2:
-				emit_signal("window_action_requested", window_id, "minimize")
-			3:
-				emit_signal("window_action_requested", window_id, "close")
-		menu.queue_free()
+	menu.id_pressed.connect(
+		func(id: int):
+			match id:
+				1:
+					emit_signal("window_action_requested", window_id, "focus")
+				2:
+					emit_signal("window_action_requested", window_id, "minimize")
+				3:
+					emit_signal("window_action_requested", window_id, "close")
+			menu.queue_free()
 	)
 	menu.popup_hide.connect(menu.queue_free)
 	menu.popup(Rect2(event.global_position, Vector2(120, 96)))
+
 
 func apply_palette(palette: Dictionary) -> void:
 	_palette = palette
 	var bg_color: Color = palette.get("panel", Color.BLACK)
 	self_modulate = bg_color
-	
+
 	# Update Start Button
 	var accent: Color = palette.get("accent", Color.BLUE)
 	var text: Color = palette.get("text", Color.WHITE)
-	var sb_style_n := StyleBoxFlat.new()
+	var sb_style_n: StyleBoxFlat = StyleBoxFlat.new()
 	sb_style_n.bg_color = accent.darkened(0.3)
 	sb_style_n.corner_radius_top_left = 4
 	sb_style_n.corner_radius_top_right = 4
@@ -243,13 +269,13 @@ func apply_palette(palette: Dictionary) -> void:
 	sb_style_n.content_margin_left = 12
 	sb_style_n.content_margin_right = 12
 	start_button.add_theme_stylebox_override("normal", sb_style_n)
-	var sb_style_h := sb_style_n.duplicate()
+	var sb_style_h: StyleBoxFlat = sb_style_n.duplicate()
 	sb_style_h.bg_color = accent
 	start_button.add_theme_stylebox_override("hover", sb_style_h)
-	var sb_style_p := sb_style_n.duplicate()
+	var sb_style_p: StyleBoxFlat = sb_style_n.duplicate()
 	sb_style_p.bg_color = accent.lightened(0.2)
 	start_button.add_theme_stylebox_override("pressed", sb_style_p)
-	
+
 	start_button.add_theme_color_override("font_color", text)
 	start_button.add_theme_color_override("font_color_hover", Color(text.r, text.g, text.b, 1))
 	start_button.add_theme_color_override("font_color_pressed", accent)
@@ -257,7 +283,7 @@ func apply_palette(palette: Dictionary) -> void:
 	# Update Window Buttons
 	for id in _buttons.keys():
 		_apply_button_state(String(id))
-	
+
 	# Update Pinned Buttons
 	for b in _pinned_buttons.values():
 		_style_button(b, false, false)
@@ -266,10 +292,10 @@ func apply_palette(palette: Dictionary) -> void:
 	if clock_label:
 		var text_color: Color = palette.get("text", Color.WHITE)
 		clock_label.add_theme_color_override("font_color", text_color)
-		clock_label.text = clock_label.text # keep current
+		clock_label.text = clock_label.text  # keep current
 
 	# Apply global font if ThemeManager provides one
-	var tm := get_tree().root.get_node_or_null("/root/ThemeManager")
+	var tm: Node = get_tree().root.get_node_or_null("/root/ThemeManager")
 	if tm != null:
 		var f: Font = tm.get_font() as Font
 		if f != null:
@@ -281,15 +307,16 @@ func apply_palette(palette: Dictionary) -> void:
 				if bt:
 					bt.add_theme_font_override("font", f)
 
-func _style_button(b: Button, active: bool, has_badge: bool) -> void:
+
+func _style_button(b: Button, active: bool, _has_badge: bool) -> void:
 	var accent: Color = _palette.get("accent", Color.BLUE)
 	var text_col: Color = _palette.get("text", Color.WHITE)
-	
+
 	b.add_theme_color_override("font_color", text_col)
 	b.add_theme_color_override("font_color_hover", text_col)
 	b.add_theme_color_override("font_color_pressed", text_col)
-	
-	var style_n := StyleBoxFlat.new()
+
+	var style_n: StyleBoxFlat = StyleBoxFlat.new()
 	style_n.bg_color = Color(1, 1, 1, 0.05) if active else Color.TRANSPARENT
 	style_n.corner_radius_top_left = 4
 	style_n.corner_radius_top_right = 4
@@ -297,16 +324,17 @@ func _style_button(b: Button, active: bool, has_badge: bool) -> void:
 	style_n.corner_radius_bottom_right = 4
 	style_n.border_width_bottom = 2 if active else 0
 	style_n.border_color = accent
-	
-	var style_h := style_n.duplicate()
+
+	var style_h: StyleBoxFlat = style_n.duplicate()
 	style_h.bg_color = Color(1, 1, 1, 0.1)
-	
-	var style_p := style_n.duplicate()
+
+	var style_p: StyleBoxFlat = style_n.duplicate()
 	style_p.bg_color = Color(1, 1, 1, 0.2)
-	
+
 	b.add_theme_stylebox_override("normal", style_n)
 	b.add_theme_stylebox_override("hover", style_h)
 	b.add_theme_stylebox_override("pressed", style_p)
+
 
 func _start_menu_btn_init() -> void:
 	# Keep this for reference if we need to reset start button default init

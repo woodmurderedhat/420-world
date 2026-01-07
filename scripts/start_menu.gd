@@ -18,9 +18,10 @@ var _start_button_global: Vector2 = Vector2.ZERO
 var _tween: Tween = null
 var _is_animating: bool = false
 
-const _PADDING := 12.0
-const _OPEN_SCALE := Vector2(0.96, 0.92)
-const _CLOSE_SCALE := Vector2(0.98, 0.98)
+const _PADDING = 12.0
+const _OPEN_SCALE = Vector2(0.96, 0.92)
+const _CLOSE_SCALE = Vector2(0.98, 0.98)
+
 
 func _ready() -> void:
 	visible = false
@@ -38,6 +39,7 @@ func _ready() -> void:
 	if restart_button:
 		restart_button.pressed.connect(func(): emit_signal("session_restart_requested"))
 
+
 func toggle(start_button_global: Vector2, start_button_size: Vector2) -> void:
 	_start_button_global = start_button_global
 	if visible:
@@ -47,8 +49,10 @@ func toggle(start_button_global: Vector2, start_button_size: Vector2) -> void:
 	_position_near_start(start_button_global, start_button_size)
 	_show_with_animation()
 
+
 func hide_menu() -> void:
 	_hide_with_animation()
+
 
 func _unhandled_input(event: InputEvent) -> void:
 	if not visible:
@@ -65,19 +69,20 @@ func _unhandled_input(event: InputEvent) -> void:
 		if event.keycode == KEY_DOWN:
 			_focus_next_app_item()
 			return
-		elif event.keycode == KEY_UP:
+		if event.keycode == KEY_UP:
 			_focus_prev_app_item()
 			return
-		elif event.keycode == KEY_ENTER or event.keycode == KEY_KP_ENTER:
+		if event.keycode == KEY_ENTER or event.keycode == KEY_KP_ENTER:
 			var f: Node = get_tree().get_focus_owner() as Node
 			if f and f is Button:
 				(f as Button).emit_signal("pressed")
 				return
 
+
 func _rebuild() -> void:
 	for c in apps_box.get_children():
 		c.queue_free()
-	var query := search_box.text.strip_edges().to_lower()
+	var query: String = search_box.text.strip_edges().to_lower()
 	if query != "":
 		_add_flat_results(query)
 		return
@@ -98,8 +103,12 @@ func _rebuild() -> void:
 	cat_names.sort()
 	for cat in cat_names:
 		var arr: Array = categories[cat]
-		arr.sort_custom(func(a, b): return String(a.get("name", "")).naturalnocasecmp_to(String(b.get("name", ""))))
+		arr.sort_custom(
+			func(a, b):
+				return String(a.get("name", "")).naturalnocasecmp_to(String(b.get("name", "")))
+		)
 		_add_section(String(cat), arr)
+
 
 func _add_flat_results(query: String) -> void:
 	var matches: Array = []
@@ -108,9 +117,15 @@ func _add_flat_results(query: String) -> void:
 		var desc := String(manifest.get("description", ""))
 		var author := String(manifest.get("author", ""))
 		var category := String(manifest.get("category", ""))
-		if app_name.to_lower().find(query) != -1 or desc.to_lower().find(query) != -1 or author.to_lower().find(query) != -1 or category.to_lower().find(query) != -1:
+		if (
+			app_name.to_lower().find(query) != -1
+			or desc.to_lower().find(query) != -1
+			or author.to_lower().find(query) != -1
+			or category.to_lower().find(query) != -1
+		):
 			matches.append(manifest)
 	_add_section("Results", matches)
+
 
 func _add_section(title: String, manifests: Array) -> void:
 	if manifests.is_empty():
@@ -156,31 +171,39 @@ func _add_section(title: String, manifests: Array) -> void:
 				var tex: Texture2D = ResourceLoader.load(icon_path) as Texture2D
 				if tex is Texture2D:
 					b.icon = tex
-		b.pressed.connect(func():
-			AppRegistry.record_recent(app_id)
-			hide_menu()
-			emit_signal("app_launch_requested", app_id)
+		b.pressed.connect(
+			func():
+				AppRegistry.record_recent(app_id)
+				hide_menu()
+				emit_signal("app_launch_requested", app_id)
 		)
 
 		# Right-click context menu for Create Shortcut / Pin
-		b.gui_input.connect(func(event: InputEvent):
-			if event is InputEventMouseButton and event.button_index == MOUSE_BUTTON_RIGHT and event.pressed:
-				var menu := PopupMenu.new()
-				add_child(menu)
-				menu.add_item("Create Desktop Shortcut", 1)
-				menu.add_item("Pin to Taskbar", 2)
-				menu.id_pressed.connect(func(id: int):
-					match id:
-						1:
-							emit_signal("create_shortcut_requested", app_id)
-						2:
-							emit_signal("pin_to_taskbar_requested", app_id)
-					menu.queue_free()
-				)
-				menu.popup(get_global_rect())
-				get_viewport().set_input_as_handled()
+		b.gui_input.connect(
+			func(event: InputEvent):
+				if (
+					event is InputEventMouseButton
+					and event.button_index == MOUSE_BUTTON_RIGHT
+					and event.pressed
+				):
+					var menu := PopupMenu.new()
+					add_child(menu)
+					menu.add_item("Create Desktop Shortcut", 1)
+					menu.add_item("Pin to Taskbar", 2)
+					menu.id_pressed.connect(
+						func(id: int):
+							match id:
+								1:
+									emit_signal("create_shortcut_requested", app_id)
+								2:
+									emit_signal("pin_to_taskbar_requested", app_id)
+							menu.queue_free()
+					)
+					menu.popup(get_global_rect())
+					get_viewport().set_input_as_handled()
 		)
 		apps_box.add_child(b)
+
 
 func _position_near_start(start_global: Vector2, start_size: Vector2) -> void:
 	# Place menu anchored to Start button top-left, prefer above taskbar if space.
@@ -195,6 +218,7 @@ func _position_near_start(start_global: Vector2, start_size: Vector2) -> void:
 		pos.x = 0
 	global_position = pos
 
+
 func _show_with_animation() -> void:
 	visible = true
 	if _tween:
@@ -202,10 +226,19 @@ func _show_with_animation() -> void:
 	modulate.a = 0.0
 	scale = _OPEN_SCALE
 	_tween = create_tween()
-	_tween.tween_property(self, "modulate:a", 1.0, 0.14).set_ease(Tween.EASE_OUT).set_trans(Tween.TRANS_QUAD)
-	_tween.parallel().tween_property(self, "scale", Vector2.ONE, 0.16).set_ease(Tween.EASE_OUT).set_trans(Tween.TRANS_BACK)
+	_tween.tween_property(self, "modulate:a", 1.0, 0.14).set_ease(Tween.EASE_OUT).set_trans(
+		Tween.TRANS_QUAD
+	)
+	(
+		_tween
+		. parallel()
+		. tween_property(self, "scale", Vector2.ONE, 0.16)
+		. set_ease(Tween.EASE_OUT)
+		. set_trans(Tween.TRANS_BACK)
+	)
 	_is_animating = true
 	_tween.finished.connect(func(): _is_animating = false)
+
 
 func _hide_with_animation() -> void:
 	if _is_animating and _tween:
@@ -215,13 +248,23 @@ func _hide_with_animation() -> void:
 	if _tween:
 		_tween.kill()
 	_tween = create_tween()
-	_tween.tween_property(self, "modulate:a", 0.0, 0.12).set_ease(Tween.EASE_IN).set_trans(Tween.TRANS_QUAD)
-	_tween.parallel().tween_property(self, "scale", _CLOSE_SCALE, 0.12).set_ease(Tween.EASE_IN).set_trans(Tween.TRANS_QUAD)
-	_is_animating = true
-	_tween.finished.connect(func():
-		visible = false
-		_is_animating = false
+	_tween.tween_property(self, "modulate:a", 0.0, 0.12).set_ease(Tween.EASE_IN).set_trans(
+		Tween.TRANS_QUAD
 	)
+	(
+		_tween
+		. parallel()
+		. tween_property(self, "scale", _CLOSE_SCALE, 0.12)
+		. set_ease(Tween.EASE_IN)
+		. set_trans(Tween.TRANS_QUAD)
+	)
+	_is_animating = true
+	_tween.finished.connect(
+		func():
+			visible = false
+			_is_animating = false
+	)
+
 
 func apply_palette(palette: Dictionary) -> void:
 	var panel_color: Color = palette.get("panel", Color(0.12, 0.13, 0.17)) as Color
@@ -231,7 +274,7 @@ func apply_palette(palette: Dictionary) -> void:
 	search_box.add_theme_color_override("font_color_placeholder", text_color * Color(1, 1, 1, 0.6))
 
 	# Apply global font if ThemeManager provides one
-	var tm := get_tree().root.get_node_or_null("/root/ThemeManager")
+	var tm: Node = get_tree().root.get_node_or_null("/root/ThemeManager")
 	if tm != null:
 		var f: Font = tm.get_font() as Font
 		if f != null:
@@ -242,12 +285,14 @@ func apply_palette(palette: Dictionary) -> void:
 				elif c is Label:
 					(c as Label).add_theme_font_override("font", f)
 
+
 func _get_app_items() -> Array:
 	var items: Array = []
 	for c in apps_box.get_children():
 		if c is Button:
 			items.append(c)
 	return items
+
 
 func _focus_next_app_item() -> void:
 	var items: Array = _get_app_items()
@@ -257,6 +302,7 @@ func _focus_next_app_item() -> void:
 	var idx: int = items.find(cur) if cur in items else -1
 	var next: Control = items[(idx + 1) % items.size()]
 	next.grab_focus()
+
 
 func _focus_prev_app_item() -> void:
 	var items: Array = _get_app_items()

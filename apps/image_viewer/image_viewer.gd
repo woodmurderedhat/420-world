@@ -10,6 +10,7 @@ const IMAGES := {
 
 var _current_key: String = ""
 
+
 func _ready() -> void:
 	selector.clear()
 	var keys := IMAGES.keys()
@@ -21,8 +22,10 @@ func _ready() -> void:
 		selector.select(0)
 		_apply_selection(selector.get_item_text(0))
 
+
 func save_state() -> Dictionary:
 	return {"selected": _current_key}
+
 
 func load_state(data: Dictionary) -> void:
 	var desired := String(data.get("selected", ""))
@@ -35,8 +38,10 @@ func load_state(data: Dictionary) -> void:
 	if selector.item_count > 0:
 		_apply_selection(selector.get_item_text(selector.selected))
 
+
 func _on_selection(idx: int) -> void:
 	_apply_selection(selector.get_item_text(idx))
+
 
 func _apply_selection(key: String) -> void:
 	_current_key = key
@@ -49,6 +54,7 @@ func _apply_selection(key: String) -> void:
 			return
 	preview.texture = null
 	status_label.text = "Image missing"
+
 
 func _find_item_index_by_text(text: String) -> int:
 	for i in range(selector.item_count):

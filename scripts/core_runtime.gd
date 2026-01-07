@@ -1,6 +1,6 @@
 extends Node
 
-const EXPECTED_SERVICES := [
+const EXPECTED_SERVICES = [
 	"CoreRuntime",
 	"EventBus",
 	"SaveManager",
@@ -10,11 +10,12 @@ const EXPECTED_SERVICES := [
 	"ThemeManager",
 ]
 
-const ARG_HEADLESS_TESTS := "--headless-tests"
+const ARG_HEADLESS_TESTS = "--headless-tests"
 
 var _start_time_ms: int = 0
-var _init_log: Array = [] # Array[Dictionary]
-var _announced := false
+var _init_log: Array = []  # Array[Dictionary]
+var _announced: bool = false
+
 
 func _ready() -> void:
 	_start_time_ms = Time.get_ticks_msec()
@@ -22,10 +23,11 @@ func _ready() -> void:
 	if OS.get_cmdline_args().has(ARG_HEADLESS_TESTS):
 		call_deferred("_run_headless_tests")
 
+
 func register_service(service_name: String) -> void:
 	# Record deterministic init order and emit a concise log line.
-	var now_ms := Time.get_ticks_msec()
-	var entry := {
+	var now_ms: int = Time.get_ticks_msec()
+	var entry: Dictionary = {
 		"name": service_name,
 		"order": _init_log.size(),
 		"ms_since_boot": now_ms - _start_time_ms,
@@ -36,9 +38,11 @@ func register_service(service_name: String) -> void:
 		_announced = true
 		Log.info("[Init] All core services ready in %d ms" % (now_ms - _start_time_ms))
 
+
 func get_init_order() -> Array:
 	# Returns a deep copy so callers cannot mutate the log.
 	return _init_log.duplicate(true)
+
 
 func get_ready_service_names() -> Array:
 	var names: Array = []
@@ -46,11 +50,13 @@ func get_ready_service_names() -> Array:
 		names.append(e.get("name", ""))
 	return names
 
+
 func has_service(service_name: String) -> bool:
 	for e in _init_log:
 		if String(e.get("name", "")) == service_name:
 			return true
 	return false
+
 
 func _all_expected_registered() -> bool:
 	for expected in EXPECTED_SERVICES:
@@ -58,12 +64,14 @@ func _all_expected_registered() -> bool:
 			return false
 	return true
 
+
 func quit_safely(code: int = 0) -> void:
 	# Central safe exit for headless tests and runtime shutdown.
 	get_tree().quit(code)
 
+
 func _run_headless_tests() -> void:
-	var runner_scene := preload("res://tests/comprehensive_headless.gd")
+	var runner_scene: Script = preload("res://tests/comprehensive_headless.gd")
 	var runner: Node = runner_scene.new()
 	get_tree().root.add_child(runner)
 	# DialogManager may initialize after CoreRuntime; avoid hard warning here.

@@ -15,6 +15,8 @@
 
 ## Godot 4.5.1 Syntax & Standards
 
+If uncertain about anything, refer to the official Godot docs.
+
 - **Strict Typing**: ALWAYS use static typing for variables, arguments, and return types.
   - **Yes**: `var health: int = 100`, `func get_name() -> String:`, `var items: Array[Dictionary] = []`
   - **No**: `var health = 100`, `func get_name():`
