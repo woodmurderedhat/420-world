@@ -167,10 +167,23 @@ func _add_section(title: String, manifests: Array) -> void:
 			tooltip_lines.append("Needs shell >= %s%s" % [min_shell, suffix])
 		if not tooltip_lines.is_empty():
 			b.tooltip_text = "\n".join(tooltip_lines)
-			if icon_path != "" and ResourceLoader.exists(icon_path):
-				var tex: Texture2D = ResourceLoader.load(icon_path) as Texture2D
-				if tex is Texture2D:
-					b.icon = tex
+
+		var tex: Texture2D = null
+		if icon_path != "" and ResourceLoader.exists(icon_path):
+			var res = ResourceLoader.load(icon_path)
+			if res is Texture2D:
+				tex = res as Texture2D
+		
+		if tex == null and ResourceLoader.exists("res://assets/icons/default_app.svg"):
+			tex = ResourceLoader.load("res://assets/icons/default_app.svg") as Texture2D
+
+		if tex != null:
+			var tm: Node = get_tree().root.get_node_or_null("/root/ThemeManager")
+			if tm != null:
+				(tm as Object).apply_icon_to_button(b, tex)
+			else:
+				b.icon = tex
+		
 		b.pressed.connect(
 			func():
 				AppRegistry.record_recent(app_id)
@@ -179,44 +192,39 @@ func _add_section(title: String, manifests: Array) -> void:
 		)
 
 		# Right-click context menu for Create Shortcut / Pin
-		b.gui_input.connect(
-			func(event: InputEvent):
-				if (
-					event is InputEventMouseButton
-					and event.button_index == MOUSE_BUTTON_RIGHT
-					and event.pressed
-				):
-					var menu := PopupMenu.new()
-					add_child(menu)
-					menu.add_item("Create Desktop Shortcut", 1)
-					menu.add_item("Pin to Taskbar", 2)
-					menu.id_pressed.connect(
-						func(id: int):
-							match id:
-								1:
-									emit_signal("create_shortcut_requested", app_id)
-								2:
-									emit_signal("pin_to_taskbar_requested", app_id)
-							menu.queue_free()
-					)
-					menu.popup(get_global_rect())
-					get_viewport().set_input_as_handled()
+		b.gui_input.connect(func(event: InputEvent):
+			if event is InputEventMouseButton and event.button_index == MOUSE_BUTTON_RIGHT and event.pressed:
+				var menu := PopupMenu.new()
+				add_child(menu)
+				menu.add_item("Create Desktop Shortcut", 1)
+				menu.add_item("Pin to Taskbar", 2)
+				menu.id_pressed.connect(func(id: int):
+					match id:
+						1:
+							emit_signal("create_shortcut_requested", app_id)
+						2:
+							emit_signal("pin_to_taskbar_requested", app_id)
+					menu.queue_free()
+				)
+				menu.popup(get_global_rect())
+				get_viewport().set_input_as_handled()
 		)
 		apps_box.add_child(b)
 
 
 func _position_near_start(start_global: Vector2, start_size: Vector2) -> void:
 	# Place menu anchored to Start button top-left, prefer above taskbar if space.
-	var menu_size := get_combined_minimum_size()
-	var viewport_rect := get_viewport_rect()
-	var pos := Vector2(start_global.x, start_global.y - menu_size.y)
-	if pos.y < 0:
-		pos.y = start_global.y + start_size.y
-	if pos.x + menu_size.x > viewport_rect.size.x:
-		pos.x = viewport_rect.size.x - menu_size.x
-	if pos.x < 0:
-		pos.x = 0
-	global_position = pos
+	#var menu_size := get_combined_minimum_size()
+	#var viewport_rect := get_viewport_rect()
+	#var pos := Vector2(start_global.x, start_global.y - menu_size.y)
+	#if pos.y < 0:
+		#pos.y = start_global.y + start_size.y
+	#if pos.x + menu_size.x > viewport_rect.size.x:
+		#pos.x = viewport_rect.size.x - menu_size.x
+	#if pos.x < 0:
+		#pos.x = 0
+	#global_position = pos
+	pass
 
 
 func _show_with_animation() -> void:

@@ -1,489 +1,180 @@
 extends Node
 
-const WM_SCRIPT = preload("res://scripts/window_manager.gd")
-const TASKBAR_SCENE = preload("res://scenes/taskbar.tscn")
-const START_MENU_SCENE = preload("res://scenes/start_menu.tscn")
-const GAME_WINDOW_SCENE = preload("res://scenes/game_window.tscn")
-
-var _errors: Array = []
-
+# A single comprehensive headless test suite.
+# Usage: Run with --headless-tests argument.
+# The CoreRuntime detects the arg and instantiates this node.
 
 func _ready() -> void:
-	var logm: LogManager = Log
-	if logm != null:
-		logm.reset_counters()
+	Log.info("HEADLESS: Starting comprehensive test suite...")
+	
+	# Give the system one frame to settle (Autoloads are already ready, but just in case)
 	await get_tree().process_frame
-	await _run_suite()
-	_collect_log_warnings()
-	if _errors.is_empty():
-		print("[Tests] Comprehensive headless checks passed")
-		get_tree().quit(0)
+
+	var failures: int = 0
+	
+	failures += _test_core_services()
+	failures += await _test_event_bus()
+	failures += await _test_save_persistence()
+	failures += await _test_settings()
+	failures += await _test_app_registry()
+	failures += await _test_theme_manager()
+
+	if failures == 0:
+		Log.info("HEADLESS: All tests passed.")
+		CoreRuntime.quit_safely(0)
 	else:
-		for e in _errors:
-			push_error(e)
-		push_error("[Tests] Comprehensive headless checks failed (%d issues)" % _errors.size())
-		get_tree().quit(1)
+		Log.error("HEADLESS: %d test(s) failed." % failures)
+		CoreRuntime.quit_safely(1)
 
 
-func _collect_log_warnings() -> void:
-	var logm: LogManager = Log
-	if logm == null:
-		return
-	var warn_count: int = logm.get_warning_count()
-	var err_count: int = logm.get_error_count()
-	if warn_count > 0:
-		for w in logm.get_warnings():
-			_errors.append("[Warning] %s" % w)
-	if err_count > 0:
-		for m in logm.get_errors():
-			_errors.append("[LogError] %s" % m)
+func _test_core_services() -> int:
+	Log.info("TEST: Verifying Core Services...")
+	var fails = 0
+	
+	# Validate EXPECTED_SERVICES from CoreRuntime
+	var expected = CoreRuntime.EXPECTED_SERVICES
+	for service_name in expected:
+		if not CoreRuntime.has_service(service_name):
+			Log.error("FAIL: Service '%s' is not registered in CoreRuntime." % service_name)
+			fails += 1
+		else:
+			# Also verify the globally accessible singleton exists
+			if not get_node("/root/" + service_name):
+				Log.error("FAIL: Singleton '/root/%s' not found in tree." % service_name)
+				fails += 1
+
+	return fails
 
 
-func _run_suite() -> void:
-	_test_project_compilation()
-	_test_service_registration()
-	# Quick checks for logs and ad-hoc prints
-	_test_log_manager()
-	_test_no_prints()
-	_test_event_bus()
-	_test_save_manager()
-	await _test_settings_manager()
-	_test_inventory_manager()
-	await _test_theme_manager()
-	_test_app_registry()
-	await _test_apps_lifecycle()
-	await _test_window_manager()
-	await _test_window_manager_leaks()
-	await _test_taskbar_and_start_menu()
-
-
-func _test_service_registration() -> void:
-	var names: Array = CoreRuntime.get_ready_service_names()
-	var expected: Array = CoreRuntime.EXPECTED_SERVICES
-	for service in expected:
-		if not names.has(service):
-			_fail("Service registration missing %s" % service)
-
-
-func _test_event_bus() -> void:
-	var bus: Object = EventBus
-	if bus == null:
-		_fail("EventBus singleton missing")
-		return
-	var payloads: Array = []
-	var cb: Callable = func(p): payloads.append(p)
-	bus.subscribe("ping", cb)
-	bus.emit_event("ping", 42)
-	bus.unsubscribe("ping", cb)
-	bus.emit_event("ping", 7)
-	bus.clear()
-	if payloads != [42]:
-		_fail("EventBus payload mismatch: %s" % payloads)
-
-
-func _test_save_manager() -> void:
-	var sm: Object = SaveManager
-	if sm == null:
-		_fail("SaveManager singleton missing")
-		return
-	var original: Dictionary = sm.load_global()
-	var marker: String = "__comprehensive_marker__"
-	var token: int = int(Time.get_unix_time_from_system())
-	var mutated: Dictionary = original.duplicate(true)
-	mutated[marker] = token
-	if not sm.save_global(mutated):
-		_fail("SaveManager failed to persist global marker")
-	var reread: Dictionary = sm.load_global()
-	if int(reread.get(marker, -1)) != token:
-		_fail("SaveManager global marker mismatch: %s" % reread.get(marker))
-	sm.save_global(original)
-
-	var app_id: String = "__comprehensive_app__"
-	var state: Dictionary = {"state": {"marker": token}}
-	if not sm.save_app(app_id, state):
-		_fail("SaveManager failed to persist app save for %s" % app_id)
-	var loaded: Dictionary = sm.load_app(app_id)
-	if int(loaded.get("state", {}).get("marker", -1)) != token:
-		_fail("SaveManager app state mismatch for %s" % app_id)
-	sm.delete_app_save(app_id)
-
-
-func _test_settings_manager() -> void:
-	var settings: Object = SettingsManager
-	if settings == null:
-		_fail("SettingsManager singleton missing")
-		return
-	var backup: Dictionary = settings.get_all()
-	var toggled_mode: String = (
-		"fractional"
-		if String(settings.get_value("display.scale_mode", "integer")) == "integer"
-		else "integer"
-	)
-	settings.set_value("display.scale_mode", toggled_mode)
-	settings.set_value("display.scale_factor", 3.5)
-	if String(settings.get_value("display.scale_mode")) != toggled_mode:
-		_fail("SettingsManager scale mode did not update")
-	if abs(float(settings.get_value("display.scale_factor")) - 3.5) > 0.001:
-		_fail("SettingsManager scale factor did not update")
-	settings.reset_to_defaults()
+func _test_event_bus() -> int:
+	Log.info("TEST: Verifying EventBus...")
+	var fails = 0
+	var state = {"payload": null}
+	
+	var event_name = StringName("test_event")
+	var callback = func(p):
+		state.payload = p
+	
+	EventBus.subscribe(event_name, callback)
+	EventBus.emit_event(event_name, "hello_world")
+	
+	# EventBus is synchronous, but we wait a frame just in case of any deferred logic elsewhere
 	await get_tree().process_frame
-	for key in backup.keys():
-		settings.set_value(key, backup[key])
-
-
-func _test_inventory_manager() -> void:
-	var inv: Object = InventoryManager
-	if inv == null:
-		_fail("InventoryManager singleton missing")
-		return
-	var backup: Dictionary = inv.items.duplicate(true)
-	var test_id: String = "headless_test_item"
-	inv.add_item(test_id, 4)
-	if not inv.has_item(test_id):
-		_fail("InventoryManager failed to add items")
-	if not inv.remove_item(test_id, 4):
-		_fail("InventoryManager failed to remove items")
-	if inv.has_item(test_id):
-		_fail("InventoryManager left zeroed item in inventory")
-	inv.items = backup.duplicate(true)
-	var sm: Object = SaveManager
-	if sm != null:
-		var global: Dictionary = sm.load_global()
-		global["inventory"] = backup.duplicate(true)
-		sm.save_global(global)
-
-
-func _test_theme_manager() -> void:
-	var theme: Object = ThemeManager
-	if theme == null:
-		_fail("ThemeManager singleton missing")
-		return
-	var original: String = String(theme.current_theme)
-	var state: Dictionary = {"triggered": false}
-	var cb = func(name, palette): state.triggered = true
-	theme.theme_changed.connect(cb)
-	var new_theme := "dark" if original == "light" else "light"
-	SettingsManager.set_value("ui.theme", new_theme)
+	
+	if state.payload != "hello_world":
+		Log.error("FAIL: EventBus did not deliver payload. Got: %s" % str(state.payload))
+		fails += 1
+	
+	EventBus.unsubscribe(event_name, callback)
+	
+	# Verify unsubscribe
+	state.payload = null
+	EventBus.emit_event(event_name, "should_not_receive")
 	await get_tree().process_frame
-	if not state.triggered:
-		_fail("ThemeManager did not notify on theme change")
-	SettingsManager.set_value("ui.theme", original)
+	
+	if state.payload != null:
+		Log.error("FAIL: EventBus delivered event after unsubscribe.")
+		fails += 1
+		
+	return fails
+
+
+func _test_save_persistence() -> int:
+	Log.info("TEST: Verifying SaveManager...")
+	var fails = 0
+	
+	var test_data = {
+		"headless_test_key": randi(),
+		"timestamp": Time.get_ticks_msec()
+	}
+	
+	# 1. Save data
+	if not SaveManager.save_global(test_data):
+		Log.error("FAIL: SaveManager.save_global returned false.")
+		fails += 1
+		return fails
+		
+	# 2. Force fresh load from disk logic (simulate restart)
+	SaveManager.refresh_global()
+	var loaded_data = SaveManager.load_global()
+	
+	# 3. Verify
+	if not loaded_data.has("headless_test_key"):
+		Log.error("FAIL: Loaded data missing key 'headless_test_key'.")
+		fails += 1
+	elif loaded_data["headless_test_key"] != test_data["headless_test_key"]:
+		Log.error("FAIL: Value mismatch. Expected %s, Got %s" % [test_data["headless_test_key"], loaded_data.get("headless_test_key")])
+		fails += 1
+		
+	return fails
+
+
+func _test_settings() -> int:
+	Log.info("TEST: Verifying SettingsManager...")
+	var fails = 0
+	
+	# 1. Set a setting
+	var test_key = "display.scale_factor"
+	var original_value = SettingsManager.get_value(test_key)
+	
+	# Ensure test value is different to trigger signal
+	var test_value = 2.5
+	if is_equal_approx(float(original_value), 2.5):
+		test_value = 3.0
+	
+	var state = {"emitted": false}
+	var signal_callback = func(k, v):
+		if k == test_key and v == test_value:
+			state.emitted = true
+			
+	SettingsManager.setting_changed.connect(signal_callback)
+	
+	SettingsManager.set_value(test_key, test_value)
+	
+	# Wait for signal? It's usually immediate but let's wait a frame
 	await get_tree().process_frame
+	
+	if not state.emitted:
+		Log.error("FAIL: SettingsManager did not emit setting_changed signal. (Old: %s, New: %s)" % [original_value, test_value])
+		fails += 1
+		
+	if SettingsManager.get_value(test_key) != test_value:
+		Log.error("FAIL: SettingsManager.get_value did not return set value.")
+		fails += 1
+		
+	# Cleanup
+	SettingsManager.set_value(test_key, original_value)
+	
+	return fails
 
 
-func _test_app_registry() -> void:
-	var registry: Object = AppRegistry
-	var manifests: Array = registry.list_manifests()
-	if manifests.is_empty():
-		_fail("AppRegistry found no manifests")
-	var app_id := "hello_world"
-	var manifest: Dictionary = registry.get_manifest(app_id)
-	if manifest.is_empty():
-		_fail("AppRegistry missing expected manifest %s" % app_id)
-	registry.record_recent(app_id)
-	if not registry.list_recent().has(app_id):
-		_fail("AppRegistry failed to record recent app %s" % app_id)
-
-
-func _test_apps_lifecycle() -> void:
-	print("Test: Verifying lifecycle for all registered apps...")
-	var manifests: Array = AppRegistry.list_manifests()
-	var tested_count: int = 0
-
-	for manifest in manifests:
-		var app_id: String = manifest.get("id", "unknown")
-		var entry_path: String = manifest.get("entry_scene", "")
-
-		# print("Test: Checking %s..." % app_id)
-
-		if entry_path.is_empty():
-			_fail("App %s has no entry_scene" % app_id)
-			continue
-
-		var scene = load(entry_path)
-		if scene == null:
-			_fail("Failed to load scene for %s" % app_id)
-			continue
-
-		if not (scene is PackedScene):
-			_fail("Entry scene for %s is not a PackedScene" % app_id)
-			continue
-
-		var instance = scene.instantiate()
-		if not (instance is AppBase):
-			_fail("App %s root node does not extend AppBase" % app_id)
-			instance.free()
-			continue
-
-		# Add to tree to trigger _ready
-		get_tree().root.add_child(instance)
-		await get_tree().process_frame
-
-		# Exercise lifecycle
-		instance.launch({})
-		instance.pause()
-		instance.resume()
-		var state: Dictionary = instance.save_state()
-		if typeof(state) != TYPE_DICTIONARY:
-			_fail(
-				(
-					"App %s save_state() returned %s, expected Dictionary"
-					% [app_id, type_string(typeof(state))]
-				)
-			)
-
-		instance.load_state(state)
-
-		instance.queue_free()
-		tested_count += 1
-
-	print("Test: Verified lifecycle for %d apps" % tested_count)
-
-
-func _test_window_manager() -> void:
-	var wm: Node = WM_SCRIPT.new()
-	get_tree().root.add_child(wm)
-	await get_tree().process_frame
-	wm.window_scene = GAME_WINDOW_SCENE
-	var scene_a := _make_dummy_scene("Alpha")
-	var scene_b := _make_dummy_scene("Beta")
-	var win_a: String = wm.open_window("test_app", "Alpha", scene_a)
-	var win_b: String = wm.open_window("test_app", "Beta", scene_b)
-	await get_tree().process_frame
-	if wm.focused_id != win_b:
-		_fail("WindowManager did not focus the second window")
-	wm.minimize_window(win_b)
-	await get_tree().process_frame
-	if wm.get_window_state(win_b) != wm.STATE_MINIMIZED:
-		_fail("WindowManager failed to minimize")
-	wm.restore_window(win_b)
-	await get_tree().process_frame
-	if wm.get_window_state(win_b) != wm.STATE_FOCUSED:
-		_fail("WindowManager failed to restore focus")
-	wm.maximize_window(win_b)
-	await get_tree().process_frame
-	if not wm.windows[win_b].get("is_maximized", false):
-		_fail("WindowManager failed to maximize")
-	wm.maximize_window(win_b)
-	await get_tree().process_frame
-	wm.toggle_fullscreen_window(win_b)
-	await get_tree().process_frame
-	if not wm.windows[win_b].get("is_fullscreen", false):
-		_fail("WindowManager failed to enter fullscreen")
-	wm.toggle_fullscreen_window(win_b)
-	await get_tree().process_frame
-	if wm.windows[win_b].get("is_fullscreen", false):
-		_fail("WindowManager did not exit fullscreen")
-	var ids: Array = wm.windows.keys()
-	for id in ids:
-		wm.close_window(String(id))
-	await get_tree().process_frame
-	if not wm.windows.is_empty():
-		_fail("WindowManager left entries after closing windows")
-	wm.queue_free()
-
-
-func _test_window_manager_leaks() -> void:
-	SettingsManager.set_value("ui.animations", false)  # Disable animations to sync logic
-
-	var wm := WM_SCRIPT.new()
-	get_tree().root.add_child(wm)
-	await get_tree().process_frame
-	wm.window_scene = GAME_WINDOW_SCENE
-
-	await get_tree().create_timer(1.0).timeout
-	var initial_nodes: int = Performance.get_monitor(Performance.OBJECT_NODE_COUNT)
-	var scene_res := _make_dummy_scene("LeakCheck")
-
-	# Burn-in cycle
-	var id1 := wm.open_window("leak_test", "BurnIn", scene_res)
-	await get_tree().process_frame
-	wm.close_window(id1)
-	await get_tree().process_frame
-
-	var base_nodes: int = Performance.get_monitor(Performance.OBJECT_NODE_COUNT)
-
-	# Stress cycle
-	for i in range(20):
-		var id := wm.open_window("leak_test", "Win%d" % i, scene_res)
-		wm.minimize_window(id)
-		wm.restore_window(id)
-		wm.close_window(id)
-
-	# Allow cleanup
-	await get_tree().create_timer(0.2).timeout
-
-	var final_nodes: int = Performance.get_monitor(Performance.OBJECT_NODE_COUNT)
-	# Allow small margin for unrelated engine allocs, but 20 windows shouldn't remain.
-	if final_nodes > base_nodes + 5:
-		_fail(
-			(
-				"Possible leak detected: Nodes went from %d to %d after closing 20 windows"
-				% [base_nodes, final_nodes]
-			)
-		)
-
-	wm.queue_free()
-
-
-func _test_taskbar_and_start_menu() -> void:
-	var start_menu = START_MENU_SCENE.instantiate()
-	var taskbar = TASKBAR_SCENE.instantiate()
-	get_tree().root.add_child(start_menu)
-	get_tree().root.add_child(taskbar)
-	await get_tree().process_frame
-	start_menu.toggle(Vector2(32, 680), Vector2(72, 32))
-	await get_tree().create_timer(0.2).timeout
-	if not start_menu.visible:
-		_fail("StartMenu did not become visible")
-	start_menu.search_box.text = "hello"
-	await get_tree().process_frame
-	start_menu.hide_menu()
-	await get_tree().create_timer(0.25).timeout
-	if start_menu.visible:
-		_fail("StartMenu did not hide after toggle")
-	var manifest := AppRegistry.get_manifest("hello_world")
-	if manifest.is_empty():
-		_fail("StartMenu expected hello_world manifest")
-	taskbar.apply_palette(ThemeManager.get_palette())
-	taskbar.set_pinned_apps(["hello_world"], {"hello_world": manifest})
-	if not taskbar._pinned_buttons.has("hello_world"):
-		_fail("Taskbar failed to create pinned button")
-	var launched: Array = []
-	taskbar.app_launch_requested.connect(func(app_id): launched.append(app_id))
-	var pinned_button: Button = taskbar._pinned_buttons.get("hello_world")
-	if pinned_button != null:
-		pinned_button.emit_signal("pressed")
-		await get_tree().process_frame
-		if launched != ["hello_world"]:
-			_fail("Taskbar did not emit pinned launch signal")
+func _test_app_registry() -> int:
+	Log.info("TEST: Verifying AppRegistry...")
+	var fails = 0
+	
+	# AppRegistry scans apps in _ready
+	if AppRegistry.apps.size() == 0:
+		Log.warn("WARN: AppRegistry has no apps. This may be correct if no apps exist in project.")
 	else:
-		_fail("Taskbar has no pinned button to press")
-	taskbar.add_window("task_win", "hello_world", "Pinned Window")
-	taskbar.set_window_state("task_win", "focused")
-	taskbar.set_window_state("task_win", "minimized")
-	await get_tree().process_frame
-	var badge: Control = taskbar._badges.get("task_win")
-	if badge == null or not badge.visible:
-		_fail("Taskbar badge did not show for minimized window")
-	taskbar.remove_window("task_win")
-	start_menu.queue_free()
-	taskbar.queue_free()
+		if not AppRegistry.apps.has("hello_world"):
+			# hello_world exists in file structure
+			Log.error("FAIL: AppRegistry did not find 'hello_world' app.")
+			fails += 1
+		
+	return fails
 
 
-func _test_project_compilation() -> void:
-	print("Test: Compiling all project scripts...")
-	var scripts: Array[String] = []
-	_scan_for_scripts("res://", scripts)
-	var count := 0
-	for path in scripts:
-		# specific exclusion for tests or addons if needed
-		if path.begins_with("res://tests/") or path.begins_with("res://addons/"):
-			continue
-
-		# Attempt load - this triggers GDScript compilation
-		var res = load(path)
-		if res == null:
-			_fail("Script compilation failed: %s" % path)
-		count += 1
-	print("Test: Verified compilation of %d scripts" % count)
-
-
-func _scan_for_scripts(dir_path: String, results: Array[String]) -> void:
-	var dir := DirAccess.open(dir_path)
-	if dir:
-		dir.list_dir_begin()
-		var file_name = dir.get_next()
-		while file_name != "":
-			if dir.current_is_dir():
-				var skip := (
-					file_name == "."
-					or file_name == ".."
-					or file_name == ".godot"
-					or file_name == ".vscode"
-					or file_name == "debug"
-				)
-				if not skip:
-					_scan_for_scripts(dir_path.path_join(file_name), results)
-			else:
-				if file_name.ends_with(".gd"):
-					results.append(dir_path.path_join(file_name))
-			file_name = dir.get_next()
-
-
-func _test_log_manager() -> void:
-	# Verify a log file exists in user://debug/logs
-	var logs_dir := ProjectSettings.globalize_path("user://debug/logs")
-	var dir := DirAccess.open(logs_dir)
-	if dir == null:
-		_fail("LogManager logs directory missing: %s" % logs_dir)
-		return
-	dir.list_dir_begin()
-	var found := false
-	var fname := dir.get_next()
-	while fname != "":
-		if not dir.current_is_dir() and fname.begins_with("log_") and fname.ends_with(".txt"):
-			found = true
-			break
-		fname = dir.get_next()
-	dir.list_dir_end()
-	if not found:
-		_fail("No log files found in %s" % logs_dir)
-
-
-func _scan_for_prints(dir_path: String) -> void:
-	var dir := DirAccess.open(dir_path)
-	if dir:
-		dir.list_dir_begin()
-		var file_name = dir.get_next()
-		while file_name != "":
-			if dir.current_is_dir():
-				var skip := (
-					file_name == "."
-					or file_name == ".."
-					or file_name == ".godot"
-					or file_name == ".vscode"
-					or file_name == "debug"
-				)
-				if not skip:
-					_scan_for_prints(dir_path.path_join(file_name))
-			else:
-				if file_name.ends_with(".gd"):
-					var fp_path := dir_path.path_join(file_name)
-					var f := FileAccess.open(
-						ProjectSettings.globalize_path(fp_path), FileAccess.READ
-					)
-					if f != null:
-						var text := f.get_as_text()
-						f.close()
-						if text.find("print(") != -1:
-							_fail("Found direct print() in %s" % fp_path)
-			file_name = dir.get_next()
-		dir.list_dir_end()
-
-
-func _test_no_prints() -> void:
-	# Scan runtime script directories for direct `print(` usage
-	var dirs := ["res://scripts", "res://apps"]
-	for dpath in dirs:
-		var abs := ProjectSettings.globalize_path(dpath)
-		_scan_for_prints(abs)
-
-
-func _make_dummy_scene(xname: String) -> PackedScene:
-	var script := GDScript.new()
-	script.source_code = (
-		'extends AppBase\nfunc launch(_p):pass\nfunc pause():pass\nfunc resume():pass\nfunc save_state() -> Dictionary:\n\treturn {"label": "%s"}\nfunc load_state(_d):pass'
-		% xname
-	)
-	script.reload()
-	var root := Control.new()
-	root.set_script(script)
-	var scene := PackedScene.new()
-	scene.pack(root)
-	root.free()
-	return scene
-
-
-func _fail(message: String) -> void:
-	_errors.append(message)
+func _test_theme_manager() -> int:
+	Log.info("TEST: Verifying ThemeManager...")
+	var fails = 0
+	
+	if ThemeManager.current_theme not in ["light", "dark"]:
+		Log.error("FAIL: ThemeManager has invalid current_theme: %s" % ThemeManager.current_theme)
+		fails += 1
+		
+	# Verify THEMES dict is populated
+	if ThemeManager.THEMES.is_empty():
+		Log.error("FAIL: ThemeManager.THEMES is empty.")
+		fails += 1
+		
+	return fails

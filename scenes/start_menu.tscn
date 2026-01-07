@@ -1,50 +1,52 @@
-[gd_scene load_steps=2 format=3]
+[gd_scene load_steps=2 format=3 uid="uid://wbgrssv8kpyl"]
 
-[ext_resource type="Script" path="res://scripts/start_menu.gd" id="1_start_menu"]
+[ext_resource type="Script" uid="uid://d4ll0f1qon4it" path="res://scripts/start_menu.gd" id="1_start_menu"]
 
 [node name="StartMenu" type="PanelContainer"]
-anchors_preset = 2
-offset_left = 0.0
-offset_top = 0.0
+z_index = 4096
 offset_right = 320.0
 offset_bottom = 400.0
 script = ExtResource("1_start_menu")
 
 [node name="VBox" type="VBoxContainer" parent="."]
-anchors_preset = 15
-offset_right = 320.0
-offset_bottom = 400.0
+layout_mode = 2
 size_flags_horizontal = 3
 size_flags_vertical = 3
 theme_override_constants/separation = 6
 
 [node name="ProfileBox" type="HBoxContainer" parent="VBox"]
 custom_minimum_size = Vector2(0, 48)
+layout_mode = 2
 
 [node name="Avatar" type="TextureRect" parent="VBox/ProfileBox"]
-expand = false
-rect_min_size = Vector2(40, 40)
+layout_mode = 2
 stretch_mode = 2
 
 [node name="ProfileName" type="Label" parent="VBox/ProfileBox"]
+layout_mode = 2
 text = "User"
-valign = 1
+vertical_alignment = 1
 
 [node name="Search" type="LineEdit" parent="VBox"]
+layout_mode = 2
 placeholder_text = "Search apps"
 
 [node name="AppsBox" type="VBoxContainer" parent="VBox"]
+layout_mode = 2
 size_flags_horizontal = 3
 size_flags_vertical = 3
 
 [node name="Footer" type="HBoxContainer" parent="VBox"]
 custom_minimum_size = Vector2(0, 48)
+layout_mode = 2
 size_flags_horizontal = 3
 
 [node name="RestartButton" type="Button" parent="VBox/Footer"]
-text = "Restart"
 custom_minimum_size = Vector2(88, 32)
+layout_mode = 2
+text = "Restart"
 
 [node name="ExitButton" type="Button" parent="VBox/Footer"]
-text = "Exit"
 custom_minimum_size = Vector2(88, 32)
+layout_mode = 2
+text = "Exit"

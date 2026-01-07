@@ -1,13 +1,11 @@
-extends Control
 class_name GameWindowManager
+extends Control
 
 signal window_opened(id)
 signal window_closed(id)
 signal window_focused(id)
 signal window_minimized(id)
 signal window_restored(id)
-
-@export var window_scene: PackedScene = preload("res://scenes/game_window.tscn")
 
 const KNOWN_PERMISSIONS = {
 	"filesystem.read": "Read user data",
@@ -16,29 +14,30 @@ const KNOWN_PERMISSIONS = {
 	"network": "Network access",
 	"settings": "Modify settings",
 }
+const SNAP_MARGIN := 32.0
+const CENTER_SNAP_MARGIN := 64.0
+const STATE_OPEN := "open"
+const STATE_FOCUSED := "focused"
+const STATE_MINIMIZED := "minimized"
+const STATE_CLOSED := "closed"
+
+@export var window_scene: PackedScene = preload("res://scenes/game_window.tscn")
 
 var windows: Dictionary = {}  # id -> Dictionary
 var z_counter: int = 0
 var focused_id: String = ""
 
 var _last_rect_by_app: Dictionary = {}  # app_id -> Rect2
+var _cascade_offset: Vector2 = Vector2.ZERO
 var _snap_preview: ColorRect = null
 var _snap_panel: PanelContainer = null
 var _snap_fill: ColorRect = null
 
-var work_area: Rect2 = Rect2(Vector2.ZERO, Vector2(1080, 720))
-
-const SNAP_MARGIN := 32.0
-const CENTER_SNAP_MARGIN := 64.0
-
-const STATE_OPEN := "open"
-const STATE_FOCUSED := "focused"
-const STATE_MINIMIZED := "minimized"
-const STATE_CLOSED := "closed"
+var _work_area: Rect2 = Rect2(Vector2.ZERO, Vector2(1080, 720))
 
 
 func set_work_area(rect: Rect2) -> void:
-	work_area = rect
+	_work_area = rect
 
 
 func open_app(app_id: String, params: Dictionary = {}) -> String:
@@ -73,7 +72,13 @@ func open_window(
 	var id := "%s_%d" % [app_id, Time.get_ticks_usec()]
 	win.window_id = id
 	win.set_title(title)
-	win.global_position = work_area.position + Vector2(80, 80)
+	
+	# Default position with cascading
+	win.global_position = _work_area.position + Vector2(80, 80) + _cascade_offset
+	_cascade_offset += Vector2(24, 24)
+	if _cascade_offset.x > 300 or _cascade_offset.y > 300:
+		_cascade_offset = Vector2.ZERO
+		
 	win.size = Vector2(640, 420)
 	if _last_rect_by_app.has(app_id):
 		var remembered: Rect2 = _last_rect_by_app[app_id]
@@ -325,8 +330,8 @@ func _apply_maximized_geometry(id: String) -> void:
 	var win: GameWindowPanel = windows[id]["node"] as GameWindowPanel
 	win.set_maximized(true)
 	win.set_fullscreen(false)
-	win.global_position = work_area.position
-	win.size = work_area.size
+	win.global_position = _work_area.position
+	win.size = _work_area.size
 
 
 func _on_request_fullscreen(id: String) -> void:
@@ -364,7 +369,7 @@ func _restore_rect(id: String) -> void:
 		return
 	var win: GameWindowPanel = windows[id]["node"]
 	var rect: Rect2 = windows[id].get(
-		"restore_rect", Rect2(work_area.position + Vector2(80, 80), win.size)
+		"restore_rect", Rect2(_work_area.position + Vector2(80, 80), win.size)
 	)
 	win.set_maximized(false)
 	win.set_fullscreen(false)
@@ -401,7 +406,7 @@ func _on_drag_moved(_id: String, cur_pos: Vector2, cur_size: Vector2) -> void:
 
 
 func _calculate_snap_rect(pos: Vector2, win_size: Vector2) -> Variant:
-	var wa: Rect2 = work_area
+	var wa: Rect2 = _work_area
 	# Left snap
 	if pos.x <= wa.position.x + SNAP_MARGIN:
 		return Rect2(wa.position, Vector2(wa.size.x * 0.5, wa.size.y))
@@ -475,7 +480,7 @@ func _apply_snap_if_needed(id: String) -> void:
 	var win: GameWindowPanel = windows[id]["node"]
 	var pos := win.global_position
 	var win_size := win.size
-	var wa: Rect2 = work_area
+	var wa: Rect2 = _work_area
 	var was_snapped := false
 	if pos.x <= wa.position.x + SNAP_MARGIN:
 		win.global_position = wa.position
@@ -505,12 +510,16 @@ func _set_restore_rect_from_window(id: String) -> void:
 func _clamp_to_work_area(win: GameWindowPanel) -> void:
 	var pos := win.global_position
 	var win_size := win.size
-	if win_size.x > work_area.size.x:
-		win_size.x = work_area.size.x
-	if win_size.y > work_area.size.y:
-		win_size.y = work_area.size.y
-	pos.x = clamp(pos.x, work_area.position.x, work_area.position.x + work_area.size.x - win_size.x)
-	pos.y = clamp(pos.y, work_area.position.y, work_area.position.y + work_area.size.y - win_size.y)
+	if win_size.x > _work_area.size.x:
+		win_size.x = _work_area.size.x
+	if win_size.y > _work_area.size.y:
+		win_size.y = _work_area.size.y
+	pos.x = clamp(
+		pos.x, _work_area.position.x, _work_area.position.x + _work_area.size.x - win_size.x
+	)
+	pos.y = clamp(
+		pos.y, _work_area.position.y, _work_area.position.y + _work_area.size.y - win_size.y
+	)
 	win.global_position = pos
 	win.size = win_size
 

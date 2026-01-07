@@ -3,6 +3,7 @@
 [ext_resource type="Script" path="res://scripts/taskbar.gd" id="1_taskbar"]
 
 [node name="Taskbar" type="PanelContainer"]
+z_index = 4096
 anchors_preset = 13
 anchor_top = 1.0
 anchor_bottom = 1.0
@@ -25,12 +26,13 @@ text = "Start"
 [node name="PinnedBox" type="HBoxContainer" parent="HBox"]
 custom_minimum_size = Vector2(72, 0)
 
-[node name="WindowsBox" type="HBoxContainer" parent="HBox"]
-custom_minimum_size = Vector2(200, 0)
+[node name="WindowScroll" type="ScrollContainer" parent="HBox"]
 size_flags_horizontal = 3
+vertical_scroll_mode = 0
 
-[node name="RightSpacer" type="Control" parent="HBox"]
+[node name="WindowsBox" type="HBoxContainer" parent="HBox/WindowScroll"]
 size_flags_horizontal = 3
+size_flags_vertical = 3
 
 [node name="TrayBox" type="HBoxContainer" parent="HBox"]
 custom_minimum_size = Vector2(120, 0)

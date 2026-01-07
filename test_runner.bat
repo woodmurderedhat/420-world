@@ -1,0 +1,1 @@
+"c:\Program Files\Godot\Godot_v4.5.1-stable_win64\Godot_v4.5.1-stable_win64.exe" --headless --path "c:\Users\Stephanus\Documents\420-world" --headless-tests > test_output.txt 2>&1

@@ -1,5 +1,5 @@
-extends Control
 class_name AppBase
+extends Control
 
 signal request_close
 signal request_minimize

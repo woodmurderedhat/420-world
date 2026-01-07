@@ -1,0 +1,30 @@
+[gd_scene load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://apps/theme_designer/main.gd" id="1"]
+
+[node name="ThemeDesigner" type="Control"]
+script = ExtResource( "1" )
+anchors_preset = 0
+
+[node name="VBox" type="VBoxContainer" parent="."]
+margin_left = 12.0
+margin_top = 12.0
+margin_right = 12.0
+margin_bottom = 12.0
+
+[node name="Header" type="Label" parent="VBox"]
+text = "Theme Designer"
+align = 0
+
+
+[node name="PreviewBox" type="VBoxContainer" parent="VBox"]
+
+[node name="Controls" type="VBoxContainer" parent="VBox"]
+
+[node name="ButtonRow" type="HBoxContainer" parent="VBox/Controls"]
+
+[node name="ApplyButton" type="Button" parent="VBox/Controls/ButtonRow"]
+text = "Apply"
+
+[node name="SaveButton" type="Button" parent="VBox/Controls/ButtonRow"]
+text = "Save Theme"

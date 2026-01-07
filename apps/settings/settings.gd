@@ -1,35 +1,36 @@
 extends AppBase
 
-@onready var mode_option: OptionButton = $VBox/DisplaySection/ScaleMode
-@onready var factor_slider: HSlider = $VBox/DisplaySection/ScaleFactor
-@onready var factor_value: Label = $VBox/DisplaySection/FactorValue
-@onready var animations_check: CheckBox = $VBox/DisplaySection/Animations
-@onready var cursor_slider: HSlider = $VBox/DisplaySection/CursorScale
-@onready var cursor_value: Label = $VBox/DisplaySection/CursorValue
+var _pending_icon_key: String = ""
 
-@onready var theme_option: OptionButton = $VBox/ThemeSection/ThemeOption
+@onready var mode_option: OptionButton = $MainLayout/TabContainer/Display/VBox/DisplaySection/ScaleMode
+@onready var factor_slider: HSlider = $MainLayout/TabContainer/Display/VBox/DisplaySection/ScaleFactor
+@onready var factor_value: Label = $MainLayout/TabContainer/Display/VBox/DisplaySection/FactorValue
+@onready var animations_check: CheckBox = $MainLayout/TabContainer/Display/VBox/DisplaySection/Animations
+@onready var cursor_slider: HSlider = $MainLayout/TabContainer/Display/VBox/DisplaySection/CursorScale
+@onready var cursor_value: Label = $MainLayout/TabContainer/Display/VBox/DisplaySection/CursorValue
 
-@onready var bg_type: OptionButton = $VBox/BackgroundSection/BackgroundType
-@onready var bg_color_a: ColorPickerButton = $VBox/BackgroundSection/ColorA
-@onready var bg_color_b: ColorPickerButton = $VBox/BackgroundSection/ColorB
-@onready var bg_image_path: LineEdit = $VBox/BackgroundSection/ImagePath
+@onready var theme_option: OptionButton = $MainLayout/TabContainer/Display/VBox/ThemeSection/ThemeOption
 
-@onready var master_slider: HSlider = $VBox/AudioSection/MasterSlider
-@onready var master_value: Label = $VBox/AudioSection/MasterValue
-@onready var mute_check: CheckBox = $VBox/AudioSection/MuteCheck
+@onready var bg_type: OptionButton = $MainLayout/TabContainer/Display/VBox/BackgroundSection/BackgroundType
+@onready var bg_color_a: ColorPickerButton = $MainLayout/TabContainer/Display/VBox/BackgroundSection/ColorA
+@onready var bg_color_b: ColorPickerButton = $MainLayout/TabContainer/Display/VBox/BackgroundSection/ColorB
+@onready var bg_image_path: LineEdit = $MainLayout/TabContainer/Display/VBox/BackgroundSection/ImagePath
 
-@onready var language_option: OptionButton = $VBox/LanguageSection/LanguageOption
+@onready var master_slider: HSlider = $MainLayout/TabContainer/Audio/VBox/AudioSection/MasterSlider
+@onready var master_value: Label = $MainLayout/TabContainer/Audio/VBox/AudioSection/MasterValue
+@onready var mute_check: CheckBox = $MainLayout/TabContainer/Audio/VBox/AudioSection/MuteCheck
 
-@onready var desktop_section: VBoxContainer = $VBox/DesktopSection
-@onready var pinned_apps_vbox: VBoxContainer = $VBox/DesktopSection/PinnedAppsVBox
-@onready var window_icons_section: VBoxContainer = $VBox/WindowIconsSection
+@onready var language_option: OptionButton = $MainLayout/TabContainer/General/VBox/LanguageSection/LanguageOption
+
+@onready var pinned_apps_vbox: VBoxContainer = $MainLayout/TabContainer/General/VBox/DesktopSection/PinnedAppsVBox
+@onready var window_icons_section: VBoxContainer = $MainLayout/TabContainer/Display/VBox/WindowIconsSection
 @onready var icon_picker: FileDialog = $IconPicker
-@onready var font_path: LineEdit = $VBox/WindowIconsSection/FontRow/FontPath
-@onready var font_browse: Button = $VBox/WindowIconsSection/FontRow/FontBrowse
+@onready var font_path: LineEdit = $MainLayout/TabContainer/Display/VBox/WindowIconsSection/FontRow/FontPath
+@onready var font_browse: Button = $MainLayout/TabContainer/Display/VBox/WindowIconsSection/FontRow/FontBrowse
 @onready var font_picker: FileDialog = $FontPicker
 
-@onready var apply_button: Button = $VBox/Actions/ApplyButton
-@onready var reset_button: Button = $VBox/Actions/ResetButton
+@onready var apply_button: Button = $MainLayout/Actions/ApplyButton
+@onready var reset_button: Button = $MainLayout/Actions/ResetButton
 @onready var toast_label: Label = $Toast
 @onready var toast_timer: Timer = $ToastTimer
 
@@ -175,10 +176,10 @@ func _build_pinned_apps_ui() -> void:
 			var t: Texture2D = ResourceLoader.load(icon_path) as Texture2D
 			if t is Texture2D:
 				tex = t
-		var tr: TextureRect = TextureRect.new()
-		tr.texture = tex
-		tr.custom_minimum_size = Vector2(32, 32)
-		h.add_child(tr)
+		var tex_rect: TextureRect = TextureRect.new()
+		tex_rect.texture = tex
+		tex_rect.custom_minimum_size = Vector2(32, 32)
+		h.add_child(tex_rect)
 		var lbl := Label.new()
 		lbl.text = String(manifest.get("name", app_id))
 		h.add_child(lbl)
@@ -226,9 +227,6 @@ func _sync_window_icons_ui() -> void:
 		var le := h.get_node_or_null("le_%s" % key)
 		if le != null:
 			le.text = String(icons.get(key, ""))
-
-
-var _pending_icon_key: String = ""
 
 
 func _on_browse_icon(key: String) -> void:
@@ -299,9 +297,14 @@ func _apply() -> void:
 	SettingsManager.set_value("ui.language", String(lang_meta))
 
 	SettingsManager.set_value("background.type", bg_type.get_selected_metadata())
-	SettingsManager.set_value("background.color_a", bg_color_a.color.to_html())
-	SettingsManager.set_value("background.color_b", bg_color_b.color.to_html())
-	SettingsManager.set_value("background.image_path", bg_image_path.text)
+	if is_instance_valid(bg_color_a):
+		SettingsManager.set_value("background.color_a", bg_color_a.color.to_html())
+	if is_instance_valid(bg_color_b):
+		SettingsManager.set_value("background.color_b", bg_color_b.color.to_html())
+	if is_instance_valid(bg_image_path):
+		SettingsManager.set_value("background.image_path", bg_image_path.text)
+	else:
+		SettingsManager.set_value("background.image_path", "")
 
 	_show_toast("Settings applied")
 	_update_dirty_state()
@@ -318,17 +321,24 @@ func _apply() -> void:
 	var icon_map: Dictionary = SettingsManager.get_value("ui.window_icons", {})
 	if typeof(icon_map) != TYPE_DICTIONARY:
 		icon_map = {}
-	for h in window_icons_section.get_children():
-		if not h.name.begins_with("icon_"):
-			continue
-		var key := h.name.trim_prefix("icon_")
-		var le := h.get_node_or_null("le_%s" % key)
-		if le != null and le.text.strip_edges() != "":
-			icon_map[key] = le.text.strip_edges()
+	if is_instance_valid(window_icons_section):
+		for h in window_icons_section.get_children():
+			if not typeof(h) == TYPE_OBJECT:
+				continue
+			if not h.name.begins_with("icon_"):
+				continue
+			var key := h.name.trim_prefix("icon_")
+			var le := h.get_node_or_null("le_%s" % key)
+			if is_instance_valid(le):
+				var txt := String(le.text).strip_edges()
+				if txt != "":
+					icon_map[key] = txt
 	SettingsManager.set_value("ui.window_icons", icon_map)
 
 	# Persist font selection
-	var fsel := font_path.text.strip_edges()
+	var fsel := ""
+	if is_instance_valid(font_path):
+		fsel = String(font_path.text).strip_edges()
 	SettingsManager.set_value("ui.font", fsel)
 	# Apply immediately
 	var tm := get_tree().root.get_node_or_null("/root/ThemeManager")

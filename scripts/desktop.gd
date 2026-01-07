@@ -1,5 +1,8 @@
-extends Control
 class_name DesktopUI
+extends Control
+
+var _palette: Dictionary = {}
+var _input_enabled: bool = true
 
 @onready var window_manager: GameWindowManager = $WindowManager
 @onready var taskbar: TaskbarUI = $Taskbar
@@ -8,12 +11,11 @@ class_name DesktopUI
 @onready var start_button: Button = $Taskbar/HBox/StartButton
 @onready var background_layer: TextureRect = $DesktopLayer
 
-var _palette: Dictionary = {}
-
-var _input_enabled: bool = true
-
 
 func _ready() -> void:
+	if OS.get_cmdline_args().has("--headless-tests"):
+		return
+
 	_input_enabled = not OS.has_feature("headless")
 	# Work area is everything above the taskbar.
 	call_deferred("_update_work_area")
@@ -28,8 +30,14 @@ func _ready() -> void:
 	taskbar.window_action_requested.connect(_on_taskbar_window_action)
 	taskbar.start_menu_toggled.connect(_on_start_menu_toggled)
 	taskbar.tray_icon_pressed.connect(func(id): _on_tray_icon_pressed(id))
-	taskbar.app_launch_requested.connect(func(app_id): window_manager.open_app(app_id))
-	start_menu.app_launch_requested.connect(func(app_id): window_manager.open_app(app_id))
+	taskbar.app_launch_requested.connect(func(app_id): 
+		window_manager.open_app(app_id)
+		start_menu.hide_menu()
+	)
+	start_menu.app_launch_requested.connect(func(app_id): 
+		window_manager.open_app(app_id)
+		start_menu.hide_menu()
+	)
 	start_menu.create_shortcut_requested.connect(func(app_id): _create_shortcut(app_id))
 	start_menu.pin_to_taskbar_requested.connect(func(app_id): _pin_to_taskbar(app_id))
 	start_menu.session_exit_requested.connect(func(): _on_session_exit())
@@ -112,13 +120,19 @@ func _update_background() -> void:
 
 func _get_icon_from_manifest(manifest: Dictionary) -> Texture2D:
 	var icon_path: String = String(manifest.get("icon", ""))
-	if icon_path == "":
-		icon_path = "res://assets/icons/default_app.svg"
+	var tex: Texture2D = null
+
 	if icon_path != "" and ResourceLoader.exists(icon_path):
-		var tex := ResourceLoader.load(icon_path)
-		if tex is Texture2D:
-			return tex
-	return null
+		var res = ResourceLoader.load(icon_path)
+		if res is Texture2D:
+			tex = res as Texture2D
+	
+	if tex == null:
+		var def_path = "res://assets/icons/default_app.svg"
+		if ResourceLoader.exists(def_path):
+			tex = ResourceLoader.load(def_path) as Texture2D
+
+	return tex
 
 
 func _on_window_opened(id: String) -> void:
@@ -232,7 +246,10 @@ func _rebuild_icons() -> void:
 		b.text = app_name
 		b.size_flags_horizontal = Control.SIZE_SHRINK_CENTER
 		var tex := _get_icon_from_manifest(manifest)
-		if tex != null:
+		var tm: Node = get_tree().root.get_node_or_null("/root/ThemeManager")
+		if tex != null and tm != null:
+			(tm as Object).apply_icon_to_button(b, tex)
+		elif tex != null:
 			b.icon = tex
 		b.pressed.connect(func(): window_manager.open_app(app_id))
 		icons_box.add_child(b)
@@ -323,11 +340,7 @@ func _apply_theme_to_window(id: String) -> void:
 
 func _refresh_desktop() -> void:
 	_rebuild_icons()
-	var log := get_tree().root.get_node_or_null("/root/Log")
-	if log != null:
-		log.info("Desktop: refresh requested")
-	else:
-		push_warning("Desktop: refresh requested (Log not available)")
+	Log.info("Desktop: refresh requested")
 
 
 func _cycle_theme() -> void:
@@ -337,14 +350,14 @@ func _cycle_theme() -> void:
 		var next := "dark" if cur != "dark" else "light"
 		settings.set_value("ui.theme", next)
 	else:
-		push_warning("No SettingsManager to change theme")
+		Log.warn("No SettingsManager to change theme")
 
 
 func _open_settings() -> void:
 	if window_manager != null:
 		window_manager.open_app("settings")
 	else:
-		push_warning("No WindowManager to open settings")
+		Log.warn("No WindowManager to open settings")
 
 
 func _create_shortcut(app_id: String) -> void:
@@ -363,7 +376,10 @@ func _create_shortcut(app_id: String) -> void:
 	b.text = String(manifest.get("name", app_id))
 	b.size_flags_horizontal = Control.SIZE_SHRINK_CENTER
 	var tex := _get_icon_from_manifest(manifest)
-	if tex != null:
+	var tm: Node = get_tree().root.get_node_or_null("/root/ThemeManager")
+	if tex != null and tm != null:
+		(tm as Object).apply_icon_to_button(b, tex)
+	elif tex != null:
 		b.icon = tex
 	b.pressed.connect(func(): window_manager.open_app(app_id))
 	b.gui_input.connect(
@@ -424,22 +440,16 @@ func _pin_to_taskbar(app_id: String) -> void:
 
 func _on_tray_icon_pressed(id: String) -> void:
 	if id == "volume":
-		var log := get_tree().root.get_node_or_null("/root/Log")
-		if log != null:
-			log.info("Tray: volume pressed")
-		else:
-			push_warning("Tray: volume pressed (Log not available)")
+		Log.info("Tray: volume pressed")
 
 
 func _on_session_exit() -> void:
-	var log := get_tree().root.get_node_or_null("/root/Log")
-	if log != null:
-		log.info("Session: exit requested")
+	Log.info("Session: exit requested")
 	get_tree().quit(0)
 
 
 func _on_session_restart() -> void:
-	var log := get_tree().root.get_node_or_null("/root/Log")
-	if log != null:
-		log.info("Session: restart requested")
+	var logger: Object = get_tree().root.get_node_or_null("/root/Log")
+	if logger != null:
+		logger.info("Session: restart requested")
 	get_tree().quit(0)

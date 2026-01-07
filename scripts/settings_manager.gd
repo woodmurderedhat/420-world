@@ -64,36 +64,36 @@ func reset_to_defaults() -> void:
 
 
 func _validate(key: StringName, value: Variant) -> Variant:
+	var normalized: Variant = value
 	match String(key):
 		"display.scale_mode":
-			if value != "integer" and value != "fractional":
-				return "integer"
-			return value
+			if normalized != "integer" and normalized != "fractional":
+				normalized = "integer"
 		"display.scale_factor":
-			var f: float = float(value)
-			return clampf(f, 0.5, 6.0)
+			normalized = clampf(float(normalized), 0.5, 6.0)
 		"audio.master_db":
-			return clampf(float(value), -80.0, 6.0)
+			normalized = clampf(float(normalized), -80.0, 6.0)
 		"audio.muted":
-			return bool(value)
+			normalized = bool(normalized)
 		"ui.theme":
-			var s: String = String(value)
-			return s if s in ["light", "dark"] else "light"
+			var theme_name: String = String(normalized)
+			normalized = theme_name if theme_name in ["light", "dark"] else "light"
 		"ui.cursor_scale":
-			return clampf(float(value), 0.5, 3.0)
+			normalized = clampf(float(normalized), 0.5, 3.0)
 		"ui.animations":
-			return bool(value)
+			normalized = bool(normalized)
 		"ui.language":
-			return String(value)
+			normalized = String(normalized)
 		"background.type":
-			var s: String = String(value)
-			return s if s in ["solid", "gradient", "image"] else "solid"
+			var bg_type: String = String(normalized)
+			normalized = bg_type if bg_type in ["solid", "gradient", "image"] else "solid"
 		"background.color_a", "background.color_b":
-			return String(value)  # Colors stored as hex strings
+			normalized = String(normalized)
 		"background.image_path":
-			return String(value)
+			normalized = String(normalized)
 		_:
-			return value
+			pass
+	return normalized
 
 
 func _load_from_global_save() -> void:

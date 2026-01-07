@@ -4,11 +4,11 @@ const IMAGES := {
 	"Shell Icon": "res://icon.svg",
 }
 
+var _current_key: String = ""
+
 @onready var selector: OptionButton = $VBox/Selector
 @onready var preview: TextureRect = $VBox/Preview
 @onready var status_label: Label = $VBox/Status
-
-var _current_key: String = ""
 
 
 func _ready() -> void:

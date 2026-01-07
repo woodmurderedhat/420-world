@@ -1,18 +1,10 @@
-extends PanelContainer
 class_name TaskbarUI
+extends PanelContainer
 
 signal window_action_requested(window_id: String, action: StringName)
 signal start_menu_toggled
 signal tray_icon_pressed(icon_id: String)
 signal app_launch_requested(app_id: String)
-
-@onready var start_button: Button = $HBox/StartButton
-@onready var pinned_box: HBoxContainer = $HBox/PinnedBox
-@onready var windows_box: HBoxContainer = $HBox/WindowsBox
-@onready var tray_box: HBoxContainer = get_node_or_null("HBox/TrayBox") as HBoxContainer
-@onready var clock_label: Label = get_node_or_null("HBox/ClockLabel") as Label
-@onready var _clock_timer: Timer = get_node_or_null("ClockTimer") as Timer
-@onready var volume_button: Button = get_node_or_null("HBox/TrayBox/VolumeButton") as Button
 
 var _buttons: Dictionary = {}  # window_id -> Button
 var _states: Dictionary = {}  # window_id -> state string
@@ -24,6 +16,14 @@ var _app_windows: Dictionary = {}  # app_id -> Array[String]
 var _pinned_buttons: Dictionary = {}  # app_id -> Button
 var _manifest_lookup: Dictionary = {}  # app_id -> manifest
 var _palette: Dictionary = {}
+
+@onready var start_button: Button = $HBox/StartButton
+@onready var pinned_box: HBoxContainer = $HBox/PinnedBox
+@onready var windows_box: HBoxContainer = get_node_or_null("HBox/WindowScroll/WindowsBox")
+@onready var tray_box: HBoxContainer = get_node_or_null("HBox/TrayBox") as HBoxContainer
+@onready var clock_label: Label = get_node_or_null("HBox/ClockLabel") as Label
+@onready var volume_button: Button = get_node_or_null("HBox/TrayBox/VolumeButton") as Button
+@onready var _clock_timer: Timer = get_node_or_null("ClockTimer") as Timer
 
 
 func _ready() -> void:
@@ -64,7 +64,8 @@ func add_window(window_id: String, app_id: String, title: String, icon: Texture2
 		return
 	var b: Button = Button.new()
 	b.toggle_mode = true
-	b.custom_minimum_size = Vector2(0, 32)
+	# Fixed min width to force scrolling in ScrollContainer
+	b.custom_minimum_size = Vector2(145, 32)
 	_titles[window_id] = title
 	_icons[window_id] = icon
 	b.text = title
@@ -85,6 +86,12 @@ func add_window(window_id: String, app_id: String, title: String, icon: Texture2
 	_badges[window_id] = _make_badge()
 	b.add_child(_badges[window_id])
 	_apply_button_state(window_id)
+
+	# Auto-scroll to end if possible
+	if windows_box.get_parent() is ScrollContainer:
+		var sc: ScrollContainer = windows_box.get_parent() as ScrollContainer
+		# Defer scroll to next frame after layout update
+		get_tree().process_frame.connect(func(): sc.scroll_horizontal = int(windows_box.size.x))
 
 
 func remove_window(window_id: String) -> void:
@@ -143,7 +150,12 @@ func _apply_button_state(window_id: String) -> void:
 	var title: String = String(_titles.get(window_id, b.text))
 	var state: String = String(_states.get(window_id, "open"))
 	var icon: Texture2D = _icons.get(window_id, null)
-	b.icon = icon
+	# Use ThemeManager helper to apply icons consistently
+	var tm: Node = get_tree().root.get_node_or_null("/root/ThemeManager")
+	if tm != null:
+		(tm as Object).apply_icon_to_button(b, icon)
+	else:
+		b.icon = icon
 	b.text = title.substr(0, 16) + ("..." if title.length() > 16 else "")
 	b.button_pressed = (state == "focused")
 	b.disabled = false
@@ -166,19 +178,27 @@ func _make_pinned_button(app_id: String, manifest: Dictionary) -> Button:
 	var b: Button = Button.new()
 	b.text = ""
 	b.tooltip_text = String(manifest.get("name", app_id))
-	b.custom_minimum_size = Vector2(32, 32)
 	b.flat = true
 	b.focus_mode = Control.FOCUS_NONE
+	var tm: Node = get_tree().root.get_node_or_null("/root/ThemeManager")
+	var tex: Texture2D = null
+	var icon_path: String = ""
 	if manifest.has("icon") and typeof(manifest["icon"]) == TYPE_STRING:
-		var icon_path: String = String(manifest["icon"])
-		if icon_path != "" and ResourceLoader.exists(icon_path):
-			var tex: Resource = ResourceLoader.load(icon_path)
-			if tex is Texture2D:
-				b.icon = tex
-		else:
-			if ResourceLoader.exists("res://assets/icons/default_app.svg"):
-				b.icon = ResourceLoader.load("res://assets/icons/default_app.svg")
-	b.expand_icon = true
+		icon_path = String(manifest["icon"])
+
+	if icon_path != "" and ResourceLoader.exists(icon_path):
+		var res: Resource = ResourceLoader.load(icon_path)
+		if res is Texture2D:
+			tex = res as Texture2D
+	
+	if tex == null and ResourceLoader.exists("res://assets/icons/default_app.svg"):
+		tex = ResourceLoader.load("res://assets/icons/default_app.svg") as Texture2D
+
+	# Apply via ThemeManager helper so pinned sizing is correct
+	if tex != null and tm != null:
+		(tm as Object).apply_icon_to_button(b, tex)
+	elif tex != null:
+		b.icon = tex
 	b.pressed.connect(func(): _on_pinned_pressed(app_id))
 
 	_style_button(b, false, false)
@@ -225,9 +245,9 @@ func _wire_window_button_inputs(button: Button, window_id: String) -> void:
 
 
 func _update_clock() -> void:
-	# Headless-safe placeholder clock to avoid OS datetime API differences
 	if clock_label != null:
-		clock_label.text = "00:00"
+		var time = Time.get_time_dict_from_system()
+		clock_label.text = "%02d:%02d" % [time.hour, time.minute]
 
 
 func _show_context_menu(window_id: String, _button: Button, event: InputEventMouseButton) -> void:

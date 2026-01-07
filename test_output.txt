@@ -1,16 +1,20 @@
 Godot Engine v4.5.1.stable.official.f62fdbde1 - https://godotengine.org
 
-SCRIPT ERROR: Compile Error: Identifier not found: Log
-   at: GDScript::reload (res://scripts/game_window.gd:56)
-ERROR: Failed to load script "res://scripts/game_window.gd" with error "Compilation failed".
-   at: load (modules/gdscript/gdscript.cpp:3041)
-SCRIPT ERROR: Parse Error: Could not preload resource script "res://scripts/taskbar.gd".
-   at: GDScript::reload (res://tests/comprehensive_headless.gd:4)
-SCRIPT ERROR: Parse Error: Could not resolve script "res://scripts/taskbar.gd".
-   at: GDScript::reload (res://tests/comprehensive_headless.gd:4)
-SCRIPT ERROR: Parse Error: Cannot infer the type of "TASKBAR_UI" constant because the value doesn't have a set type.
-   at: GDScript::reload (res://tests/comprehensive_headless.gd:4)
-SCRIPT ERROR: Parse Error: Cannot infer the type of "taskbar" variable because the value doesn't have a set type.
-   at: GDScript::reload (res://tests/comprehensive_headless.gd:231)
-ERROR: Failed to load script "res://tests/comprehensive_headless.gd" with error "Parse error".
-   at: load (modules/gdscript/gdscript.cpp:3041)
+[Init #01] CoreRuntime ready (+0 ms)
+[Init #02] EventBus ready (+17 ms)
+[Init #03] SaveManager ready (+33 ms)
+[SaveManager] Global save loaded (schema=1, keys=5)
+[Init #04] SettingsManager ready (+65 ms)
+[Init #05] AppRegistry ready (+81 ms)
+[Init #06] InventoryManager ready (+111 ms)
+[Init #07] ThemeManager ready (+124 ms)
+[Init] All core services ready in 124 ms
+HEADLESS: Starting comprehensive test suite...
+TEST: Verifying Core Services...
+TEST: Verifying EventBus...
+TEST: Verifying SaveManager...
+[SaveManager] Global save loaded (schema=1, keys=5)
+TEST: Verifying SettingsManager...
+TEST: Verifying AppRegistry...
+TEST: Verifying ThemeManager...
+HEADLESS: All tests passed.

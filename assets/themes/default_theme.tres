@@ -1,0 +1,6 @@
+[gd_resource type="Theme" load_steps=2 format=3 uid="uid://bfdli3xpfjpxe"]
+
+[ext_resource type="FontFile" uid="uid://cdbdssg6a6l43" path="res://assets/fonts/Inter-Variable.ttf" id="1_sx0q5"]
+
+[resource]
+default_font = ExtResource("1_sx0q5")

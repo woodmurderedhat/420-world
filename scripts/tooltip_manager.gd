@@ -37,7 +37,20 @@ func _ready() -> void:
 func show_tooltip(text: String, global_pos: Vector2, duration: float = 3.0) -> void:
 	_label.text = text
 	_panel.visible = true
-	_panel.rect_global_position = global_pos + Vector2(8, 16)
+
+	# Compute tooltip position with adaptive placement and viewport clamping
+	var offset_below: Vector2 = Vector2(8, 16)
+	var vp_size: Vector2 = get_viewport().get_visible_rect().size
+	var panel_size: Vector2 = Utils.get_control_size(_panel)
+
+	var preferred_pos: Vector2 = global_pos + offset_below
+	# If tooltip doesn't fit below the anchor, prefer placing it above
+	if preferred_pos.y + panel_size.y > vp_size.y:
+		preferred_pos = global_pos + Vector2(8, -panel_size.y - 8)
+
+	# Clamp to viewport bounds so tooltip never goes off-screen (2px margin)
+	_panel.global_position = Utils.clamp_to_viewport(preferred_pos, panel_size, vp_size, Vector2(2, 2))
+
 	# Apply global font if available
 	var tm: Node = get_tree().root.get_node_or_null("/root/ThemeManager")
 	if tm != null:

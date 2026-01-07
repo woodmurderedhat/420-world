@@ -46,18 +46,25 @@ func show_toast(text: String, duration: float = 2.0) -> void:
 		var f: Font = tm.get_font() as Font
 		if f != null:
 			_toast_label.add_theme_font_override("font", f)
+	
+	_toast_panel.visible = true
+	# Force update to get correct size
+	_toast_panel.reset_size()
+	
 	# Position centered above bottom
 	var vsize: Vector2 = get_viewport().get_visible_rect().size
-	var panel_size: Vector2 = _toast_panel.custom_minimum_size
-	_toast_panel.rect_size = panel_size
-	_toast_panel.rect_position = Vector2((vsize.x - panel_size.x) * 0.5, vsize.y - 96)
-	_toast_panel.modulate = Color(1, 1, 1, 0.0)
-	_toast_panel.visible = true
+	var panel_size: Vector2 = _toast_panel.size
+	var target_pos = Vector2((vsize.x - panel_size.x) * 0.5, vsize.y - panel_size.y - 64)
+	
+	_toast_panel.position = target_pos + Vector2(0, 8) # Start slightly lower
+	_toast_panel.modulate.a = 0.0
 	_toast_visible = true
+	
 	# Fade/slide in
 	var tw = create_tween()
+	tw.set_parallel(true)
 	tw.tween_property(_toast_panel, "modulate:a", 1.0, 0.18)
-	tw.tween_property(_toast_panel, "rect_position:y", _toast_panel.rect_position.y - 8, 0.18)
+	tw.tween_property(_toast_panel, "position:y", target_pos.y, 0.18)
 	_toast_timer.start(duration)
 
 
@@ -66,9 +73,10 @@ func _on_toast_timeout() -> void:
 		return
 	_toast_visible = false
 	var tw = create_tween()
+	tw.set_parallel(true)
 	tw.tween_property(_toast_panel, "modulate:a", 0.0, 0.22)
-	tw.tween_property(_toast_panel, "rect_position:y", _toast_panel.rect_position.y + 8, 0.22)
-	tw.tween_callback(Callable(self, "_finish_toast"))
+	tw.tween_property(_toast_panel, "position:y", _toast_panel.position.y + 8, 0.22)
+	tw.chain().tween_callback(_finish_toast)
 
 
 func _finish_toast() -> void:
@@ -78,26 +86,34 @@ func _finish_toast() -> void:
 # Modal alert dialog (simple blocking callback)
 func show_alert(title: String, message: String) -> void:
 	var pnl: AcceptDialog = AcceptDialog.new()
-	pnl.window_title = title
-	var lbl: Label = Label.new()
-	lbl.text = message
-	pnl.add_child(lbl)
+	pnl.title = title
+	pnl.dialog_text = message
+	pnl.dialog_autowrap = true
 	get_tree().get_root().add_child(pnl)
-	pnl.popup_centered()
+	pnl.popup_centered(Vector2(300, 100))
+	pnl.confirmed.connect(pnl.queue_free)
 
 
 # Confirm dialog with callback on confirm(true) / cancel(false)
 func show_confirm(title: String, message: String, callback: Callable) -> void:
 	var dlg: ConfirmationDialog = ConfirmationDialog.new()
-	dlg.window_title = title
-	dlg.get_ok().text = "Yes"
-	dlg.get_cancel().text = "No"
-	var lbl: Label = Label.new()
-	lbl.text = message
-	dlg.add_child(lbl)
-	dlg.get_ok().pressed.connect(Callable(self, "_on_confirm_ok").bind(callback, dlg))
-	dlg.get_cancel().pressed.connect(Callable(self, "_on_confirm_cancel").bind(callback, dlg))
+	dlg.title = title
+	dlg.dialog_text = message
+	dlg.dialog_autowrap = true
+	dlg.ok_button_text = "Yes"
+	dlg.cancel_button_text = "No"
+	
+	dlg.confirmed.connect(func():
+		callback.call(true)
+		dlg.queue_free()
+	)
+	dlg.canceled.connect(func():
+		callback.call(false)
+		dlg.queue_free()
+	)
+	
 	get_tree().get_root().add_child(dlg)
+	dlg.popup_centered(Vector2(300, 100))
 	dlg.popup_centered()
 
 

@@ -1,5 +1,5 @@
-extends Panel
 class_name GameWindowPanel
+extends Panel
 
 signal request_focus(id)
 signal request_close(id)
@@ -62,6 +62,8 @@ func set_content(scene: PackedScene) -> Node:
 		return null
 	var inst: Node = scene.instantiate()
 	content_root.add_child(inst)
+	if inst is Control:
+		inst.set_anchors_preset(Control.PRESET_FULL_RECT)
 	return inst
 
 
@@ -151,12 +153,11 @@ func apply_palette(palette: Dictionary) -> void:
 	if content_root.get_child_count() > 0:
 		var app_root: Node = content_root.get_child(0)
 		if app_root != null:
-			if app_root.has("metadata"):
-				var m: Variant = app_root.get("metadata")
-				if typeof(m) == TYPE_DICTIONARY and m.has("window_icons"):
-					for raw_k in m["window_icons"].keys():
-						var k: String = String(raw_k)
-						icon_cfg[k] = m["window_icons"].get(k, "")
+			var m: Dictionary = Utils.get_app_metadata(app_root)
+			if m.has("window_icons"):
+				for raw_k in m["window_icons"].keys():
+					var k: String = String(raw_k)
+					icon_cfg[k] = m["window_icons"].get(k, "")
 
 	# Apply icons or fallback text for titlebar buttons
 	_apply_icon_or_text($TitleBar/MinButton, "minimize", "_")
@@ -243,10 +244,14 @@ func _apply_icon_or_text(btn: Button, key: String, fallback_text: String) -> voi
 	if settings_node != null:
 		icons_map = settings_node.get_value("ui.window_icons", {}) as Dictionary
 	var path: String = String(icons_map.get(key, ""))
-	if path != "" and ResourceLoader.exists(path):
-		var tex: Texture2D = ResourceLoader.load(path) as Texture2D
-		if tex is Texture2D:
-			btn.icon = tex
+	if path != "":
+			var tex: Texture2D = Utils.load_texture_if_exists(path)
+			if tex != null:
+				var tm: Node = get_tree().root.get_node_or_null("/root/ThemeManager")
+				if tm != null:
+					(tm as Object).apply_icon_to_button(btn, tex)
+				else:
+					btn.icon = tex
 			return
 	# fallback to simple text glyph
 	btn.icon = null

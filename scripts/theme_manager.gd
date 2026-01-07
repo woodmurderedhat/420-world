@@ -2,7 +2,7 @@ extends Node
 
 signal theme_changed(theme_name: StringName, palette: Dictionary)
 
-const THEMES: Dictionary = {
+var THEMES: Dictionary = {
 	"light":
 	{
 		"bg": Color(0.94, 0.96, 1.0),
@@ -26,11 +26,20 @@ const THEMES: Dictionary = {
 var current_theme: StringName = "light"
 var _font: Font = null
 
+# Icon and sizing defaults
+const DEFAULT_ICON_SIZE: int = 32
+var icon_scale: float = 1.0
+var desktop_icon_size: int = DEFAULT_ICON_SIZE
+var pinned_icon_size: int = DEFAULT_ICON_SIZE
+var window_icon_height: int = 32
+
+signal theme_resource_changed(theme_name: StringName, theme: Theme)
 
 func _ready() -> void:
 	var core := get_tree().root.get_node_or_null("/root/CoreRuntime")
 	if core != null:
 		core.register_service("ThemeManager")
+	load_custom_themes()
 	_apply_settings_theme()
 	var settings := get_tree().root.get_node_or_null("/root/SettingsManager")
 	if settings != null:
@@ -44,9 +53,75 @@ func _ready() -> void:
 			set_font(fpath)
 		else:
 			# No user-selected font: try bundled fallback
-			var bundled := "res://assets/fonts/Inter-Regular.ttf"
+			var bundled := "res://assets/fonts/Inter-Variable.ttf"
 			if ResourceLoader.exists(bundled):
 				set_font(bundled)
+
+
+# --- Icon / sizing helpers -------------------------------------------------
+func get_icon_size() -> int:
+	return int(clamp(desktop_icon_size * icon_scale, 8, 256))
+
+func get_desktop_icon_vector() -> Vector2:
+	var s := get_icon_size()
+	return Vector2(s, s)
+
+func get_pinned_icon_vector() -> Vector2:
+	var s := int(clamp(pinned_icon_size * icon_scale, 8, 256))
+	return Vector2(s, s)
+
+func get_window_icon_height() -> int:
+	return int(clamp(window_icon_height * icon_scale, 8, 512))
+
+func set_icon_scale(scale: float) -> void:
+	icon_scale = clamp(scale, 0.25, 4.0)
+	emit_signal("theme_changed", current_theme, get_palette())
+
+func set_desktop_icon_size(size: int) -> void:
+	desktop_icon_size = max(size, 8)
+	emit_signal("theme_changed", current_theme, get_palette())
+
+func set_pinned_icon_size(size: int) -> void:
+	pinned_icon_size = max(size, 8)
+	emit_signal("theme_changed", current_theme, get_palette())
+
+func set_window_icon_height(size: int) -> void:
+	window_icon_height = max(size, 8)
+	emit_signal("theme_changed", current_theme, get_palette())
+
+func set_palette_for_theme(theme_name: StringName, palette: Dictionary) -> void:
+	if THEMES.has(theme_name):
+		THEMES[theme_name] = palette
+		if current_theme == theme_name:
+			emit_signal("theme_changed", current_theme, palette)
+
+func apply_icon_to_button(b: Button, tex: Texture2D) -> void:
+	# Centralized helper to apply icons consistently across the shell
+	if b == null:
+		return
+	b.icon = tex
+	# Prefer scaling icons to fit button area so huge textures do not blow up UI
+	b.expand_icon = true
+	# If this button appears in pinned box, ensure square pinned icon sizing
+	if b.get_parent() and b.get_parent().name == "PinnedBox":
+		b.custom_minimum_size = get_pinned_icon_vector()
+		return
+	# For generic window buttons, keep height consistent
+	if b.custom_minimum_size.y == 0 or b.custom_minimum_size.y < 24:
+		b.custom_minimum_size.y = get_window_icon_height()
+
+func build_basic_theme_resource(theme_name: StringName = "builtin") -> Theme:
+	# Build a minimal Theme resource with font and important constants
+	var theme: Theme = Theme.new()
+	# Add font if available
+	if _font != null:
+		theme.set_font("default_font", "Label", _font)
+		# Make the font available to Buttons/Labels via theme; callers may still use add_theme_font_override
+		# Important constants
+		theme.set_constant("icon_size", "Button", get_icon_size())
+	# Colors and styleboxes could be added here for a richer theme
+	emit_signal("theme_resource_changed", theme_name, theme)
+	return theme
 
 
 func _on_setting_changed(key: StringName, value: Variant) -> void:
@@ -60,6 +135,7 @@ func set_theme(theme_name: StringName) -> void:
 		return
 	current_theme = theme_name
 	var palette: Dictionary = THEMES[theme_name]
+	get_tree().root.theme = build_basic_theme_resource(current_theme)
 	emit_signal("theme_changed", current_theme, palette)
 
 
@@ -97,3 +173,57 @@ func _apply_settings_theme() -> void:
 		return
 	var theme_name := StringName(settings.get_value("ui.theme", "light"))
 	set_theme(theme_name)
+
+
+const CUSTOM_THEMES_PATH = "user://custom_themes.json"
+
+func load_custom_themes() -> void:
+	if not FileAccess.file_exists(CUSTOM_THEMES_PATH):
+		return
+		
+	var f = FileAccess.open(CUSTOM_THEMES_PATH, FileAccess.READ)
+	if f == null:
+		return
+		
+	var text = f.get_as_text()
+	var json = JSON.new()
+	if json.parse(text) != OK:
+		Log.error("ThemeManager: Corrupt custom_themes.json at line %s" % json.get_error_line())
+		return
+		
+	var data = json.get_data()
+	if typeof(data) != TYPE_DICTIONARY:
+		return
+		
+	for theme_name in data:
+		var hex_pal = data[theme_name]
+		if typeof(hex_pal) != TYPE_DICTIONARY:
+			continue
+			
+		var pal = {}
+		if THEMES.has(theme_name):
+			pal = THEMES[theme_name].duplicate()
+			
+		for k in hex_pal:
+			pal[k] = Color.from_string(hex_pal[k], Color.BLACK)
+			
+		THEMES[theme_name] = pal
+	
+	Log.info("ThemeManager: Loaded custom themes")
+
+
+func save_custom_themes() -> void:
+	var export_data = {}
+	for theme_name in THEMES:
+		var pal = THEMES[theme_name]
+		var hex_pal = {}
+		for k in pal:
+			var c = pal[k]
+			if c is Color:
+				hex_pal[k] = c.to_html()
+		export_data[theme_name] = hex_pal
+		
+	var f = FileAccess.open(CUSTOM_THEMES_PATH, FileAccess.WRITE)
+	if f:
+		f.store_string(JSON.stringify(export_data, "\t"))
+		Log.info("ThemeManager: Saved custom themes")

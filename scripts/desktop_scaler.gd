@@ -1,5 +1,5 @@
-extends Control
 class_name DesktopScaler
+extends Control
 
 const BASE_SIZE := Vector2(1080, 720)
 

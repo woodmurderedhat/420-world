@@ -6,11 +6,11 @@ const DEBUG_BUNDLE_PATH = "user://debug.zip"
 
 const SCHEMA_VERSION = 1
 
+@export var auto_save_interval_sec: float = 120.0
+
 var _global_cache: Dictionary = {}
 var _loaded_global: bool = false
 var _autosave_timer: Timer
-
-@export var auto_save_interval_sec: float = 120.0
 
 
 func _ready() -> void:

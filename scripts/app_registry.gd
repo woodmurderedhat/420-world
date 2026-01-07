@@ -10,10 +10,10 @@ const KNOWN_PERMISSIONS = {
 	"network": "Network access",
 	"settings": "Modify settings",
 }
+const RECENT_LIMIT = 6
 
 var apps: Dictionary = {}  # app_id -> manifest Dictionary
 var recently_used: Array[String] = []
-const RECENT_LIMIT = 6
 
 
 func _ready() -> void:
@@ -97,15 +97,22 @@ func _is_manifest_valid(manifest: Dictionary) -> bool:
 		if not manifest.has(key):
 			Log.warn("AppRegistry: manifest missing %s" % key)
 			return false
-	if typeof(manifest["id"]) != TYPE_STRING or String(manifest["id"]).is_empty():
+	var id_val: Variant = manifest["id"]
+	var name_val: Variant = manifest["name"]
+	var entry_scene_val: Variant = manifest["entry_scene"]
+	var version_val: Variant = manifest["version"]
+	if (
+		typeof(id_val) != TYPE_STRING
+		or String(id_val).is_empty()
+		or typeof(name_val) != TYPE_STRING
+		or String(name_val).is_empty()
+		or typeof(entry_scene_val) != TYPE_STRING
+		or typeof(version_val) != TYPE_STRING
+		or String(version_val).is_empty()
+	):
 		return false
-	if typeof(manifest["name"]) != TYPE_STRING or String(manifest["name"]).is_empty():
-		return false
-	if typeof(manifest["entry_scene"]) != TYPE_STRING:
-		return false
-	if typeof(manifest["version"]) != TYPE_STRING or String(manifest["version"]).is_empty():
-		return false
-	if not ResourceLoader.exists(manifest["entry_scene"]):
+	var entry_scene_path: String = String(entry_scene_val)
+	if not ResourceLoader.exists(entry_scene_path):
 		Log.warn("AppRegistry: entry scene missing for %s" % manifest.get("id", "?"))
 		return false
 	if manifest.has("icon") and typeof(manifest["icon"]) == TYPE_STRING and manifest["icon"] != "":

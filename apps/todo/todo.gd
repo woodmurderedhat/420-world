@@ -1,13 +1,13 @@
 extends AppBase
 
+var _items: Array = []  # Array[Dictionary]
+
 @onready var input: LineEdit = $VBox/AddRow/Input
 @onready var add_button: Button = $VBox/AddRow/AddButton
 @onready var items_box: VBoxContainer = $VBox/List/ItemsBox
 @onready var status_label: Label = $VBox/Status
 @onready var clear_done_button: Button = $VBox/Actions/ClearDone
 @onready var clear_all_button: Button = $VBox/Actions/ClearAll
-
-var _items: Array = []  # Array[Dictionary]
 
 
 func _ready() -> void:

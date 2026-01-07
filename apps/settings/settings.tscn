@@ -1,159 +1,243 @@
-[gd_scene load_steps=2 format=3]
+[gd_scene load_steps=2 format=3 uid="uid://settings_scene_uid"]
 
 [ext_resource type="Script" path="res://apps/settings/settings.gd" id="1_settings"]
 
 [node name="Settings" type="Control"]
+layout_mode = 3
 anchors_preset = 15
-offset_right = 640.0
-offset_bottom = 460.0
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
 script = ExtResource("1_settings")
 
-[node name="VBox" type="VBoxContainer" parent="."]
+[node name="MainLayout" type="VBoxContainer" parent="."]
+layout_mode = 1
 anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
 offset_left = 12.0
 offset_top = 12.0
-offset_right = 628.0
-offset_bottom = 448.0
+offset_right = -12.0
+offset_bottom = -12.0
+grow_horizontal = 2
+grow_vertical = 2
 theme_override_constants/separation = 8
 
-[node name="Title" type="Label" parent="VBox"]
+[node name="Title" type="Label" parent="MainLayout"]
+layout_mode = 2
 text = "Settings"
+horizontal_alignment = 1
 
-[node name="DisplaySection" type="VBoxContainer" parent="VBox"]
+[node name="TabContainer" type="TabContainer" parent="MainLayout"]
+layout_mode = 2
+size_flags_vertical = 3
+
+[node name="General" type="ScrollContainer" parent="MainLayout/TabContainer"]
+layout_mode = 2
+
+[node name="VBox" type="VBoxContainer" parent="MainLayout/TabContainer/General"]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_constants/separation = 16
+
+[node name="LanguageSection" type="VBoxContainer" parent="MainLayout/TabContainer/General/VBox"]
+layout_mode = 2
 theme_override_constants/separation = 4
 
-[node name="DisplayLabel" type="Label" parent="VBox/DisplaySection"]
+[node name="LanguageLabel" type="Label" parent="MainLayout/TabContainer/General/VBox/LanguageSection"]
+layout_mode = 2
+text = "Language"
+
+[node name="LanguageOption" type="OptionButton" parent="MainLayout/TabContainer/General/VBox/LanguageSection"]
+layout_mode = 2
+
+[node name="DesktopSection" type="VBoxContainer" parent="MainLayout/TabContainer/General/VBox"]
+layout_mode = 2
+theme_override_constants/separation = 4
+
+[node name="DesktopLabel" type="Label" parent="MainLayout/TabContainer/General/VBox/DesktopSection"]
+layout_mode = 2
+text = "Desktop & Pinned Apps"
+
+[node name="PinnedAppsVBox" type="VBoxContainer" parent="MainLayout/TabContainer/General/VBox/DesktopSection"]
+layout_mode = 2
+size_flags_horizontal = 3
+
+[node name="Display" type="ScrollContainer" parent="MainLayout/TabContainer"]
+visible = false
+layout_mode = 2
+
+[node name="VBox" type="VBoxContainer" parent="MainLayout/TabContainer/Display"]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_constants/separation = 16
+
+[node name="DisplaySection" type="VBoxContainer" parent="MainLayout/TabContainer/Display/VBox"]
+layout_mode = 2
+theme_override_constants/separation = 4
+
+[node name="DisplayLabel" type="Label" parent="MainLayout/TabContainer/Display/VBox/DisplaySection"]
+layout_mode = 2
 text = "Display"
 
-[node name="ScaleMode" type="OptionButton" parent="VBox/DisplaySection"]
+[node name="ScaleMode" type="OptionButton" parent="MainLayout/TabContainer/Display/VBox/DisplaySection"]
+layout_mode = 2
 
-[node name="ScaleFactor" type="HSlider" parent="VBox/DisplaySection"]
+[node name="ScaleFactor" type="HSlider" parent="MainLayout/TabContainer/Display/VBox/DisplaySection"]
+layout_mode = 2
 min_value = 0.5
 max_value = 6.0
 step = 0.05
 value = 1.0
 
-[node name="FactorValue" type="Label" parent="VBox/DisplaySection"]
+[node name="FactorValue" type="Label" parent="MainLayout/TabContainer/Display/VBox/DisplaySection"]
+layout_mode = 2
 text = "Scale: 1.00"
 
-[node name="Animations" type="CheckBox" parent="VBox/DisplaySection"]
+[node name="Animations" type="CheckBox" parent="MainLayout/TabContainer/Display/VBox/DisplaySection"]
+layout_mode = 2
 text = "Enable animations"
 
-[node name="CursorScale" type="HSlider" parent="VBox/DisplaySection"]
+[node name="CursorScale" type="HSlider" parent="MainLayout/TabContainer/Display/VBox/DisplaySection"]
+layout_mode = 2
 min_value = 0.5
 max_value = 3.0
 step = 0.1
 value = 1.0
 
-[node name="CursorValue" type="Label" parent="VBox/DisplaySection"]
+[node name="CursorValue" type="Label" parent="MainLayout/TabContainer/Display/VBox/DisplaySection"]
+layout_mode = 2
 text = "Cursor: 1.0x"
 
-[node name="ThemeSection" type="VBoxContainer" parent="VBox"]
+[node name="ThemeSection" type="VBoxContainer" parent="MainLayout/TabContainer/Display/VBox"]
+layout_mode = 2
 theme_override_constants/separation = 4
 
-[node name="ThemeLabel" type="Label" parent="VBox/ThemeSection"]
+[node name="ThemeLabel" type="Label" parent="MainLayout/TabContainer/Display/VBox/ThemeSection"]
+layout_mode = 2
 text = "Theme"
 
-[node name="ThemeOption" type="OptionButton" parent="VBox/ThemeSection"]
+[node name="ThemeOption" type="OptionButton" parent="MainLayout/TabContainer/Display/VBox/ThemeSection"]
+layout_mode = 2
 
-[node name="BackgroundSection" type="VBoxContainer" parent="VBox"]
+[node name="BackgroundSection" type="VBoxContainer" parent="MainLayout/TabContainer/Display/VBox"]
+layout_mode = 2
 theme_override_constants/separation = 4
 
-[node name="BackgroundLabel" type="Label" parent="VBox/BackgroundSection"]
+[node name="BackgroundLabel" type="Label" parent="MainLayout/TabContainer/Display/VBox/BackgroundSection"]
+layout_mode = 2
 text = "Background"
 
-[node name="BackgroundType" type="OptionButton" parent="VBox/BackgroundSection"]
+[node name="BackgroundType" type="OptionButton" parent="MainLayout/TabContainer/Display/VBox/BackgroundSection"]
+layout_mode = 2
 
-[node name="ColorA" type="ColorPickerButton" parent="VBox/BackgroundSection"]
+[node name="ColorA" type="ColorPickerButton" parent="MainLayout/TabContainer/Display/VBox/BackgroundSection"]
+layout_mode = 2
 text = "Color A"
 edit_alpha = false
 
-[node name="ColorB" type="ColorPickerButton" parent="VBox/BackgroundSection"]
+[node name="ColorB" type="ColorPickerButton" parent="MainLayout/TabContainer/Display/VBox/BackgroundSection"]
+layout_mode = 2
 text = "Color B"
 edit_alpha = false
 
-[node name="ImagePath" type="LineEdit" parent="VBox/BackgroundSection"]
+[node name="ImagePath" type="LineEdit" parent="MainLayout/TabContainer/Display/VBox/BackgroundSection"]
+layout_mode = 2
 placeholder_text = "res://path/to/image.png"
 
-[node name="AudioSection" type="VBoxContainer" parent="VBox"]
+[node name="WindowIconsSection" type="VBoxContainer" parent="MainLayout/TabContainer/Display/VBox"]
+layout_mode = 2
 theme_override_constants/separation = 4
 
-[node name="AudioLabel" type="Label" parent="VBox/AudioSection"]
+[node name="WindowIconsLabel" type="Label" parent="MainLayout/TabContainer/Display/VBox/WindowIconsSection"]
+layout_mode = 2
+text = "Window Controls Icons & Font"
+
+[node name="FontRow" type="HBoxContainer" parent="MainLayout/TabContainer/Display/VBox/WindowIconsSection"]
+custom_minimum_size = Vector2(0, 36)
+layout_mode = 2
+
+[node name="FontLabel" type="Label" parent="MainLayout/TabContainer/Display/VBox/WindowIconsSection/FontRow"]
+layout_mode = 2
+text = "UI Font"
+
+[node name="FontPath" type="LineEdit" parent="MainLayout/TabContainer/Display/VBox/WindowIconsSection/FontRow"]
+layout_mode = 2
+size_flags_horizontal = 3
+
+[node name="FontBrowse" type="Button" parent="MainLayout/TabContainer/Display/VBox/WindowIconsSection/FontRow"]
+layout_mode = 2
+text = "Browse"
+
+[node name="Audio" type="ScrollContainer" parent="MainLayout/TabContainer"]
+visible = false
+layout_mode = 2
+
+[node name="VBox" type="VBoxContainer" parent="MainLayout/TabContainer/Audio"]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_constants/separation = 16
+
+[node name="AudioSection" type="VBoxContainer" parent="MainLayout/TabContainer/Audio/VBox"]
+layout_mode = 2
+theme_override_constants/separation = 4
+
+[node name="AudioLabel" type="Label" parent="MainLayout/TabContainer/Audio/VBox/AudioSection"]
+layout_mode = 2
 text = "Audio"
 
-[node name="MasterSlider" type="HSlider" parent="VBox/AudioSection"]
+[node name="MasterSlider" type="HSlider" parent="MainLayout/TabContainer/Audio/VBox/AudioSection"]
+layout_mode = 2
 min_value = -40.0
 max_value = 6.0
 step = 0.5
 value = 0.0
 
-[node name="MasterValue" type="Label" parent="VBox/AudioSection"]
+[node name="MasterValue" type="Label" parent="MainLayout/TabContainer/Audio/VBox/AudioSection"]
+layout_mode = 2
 text = "Master: 0.0 dB"
 
-[node name="MuteCheck" type="CheckBox" parent="VBox/AudioSection"]
+[node name="MuteCheck" type="CheckBox" parent="MainLayout/TabContainer/Audio/VBox/AudioSection"]
+layout_mode = 2
 text = "Mute"
 
-[node name="LanguageSection" type="VBoxContainer" parent="VBox"]
-theme_override_constants/separation = 4
-
-[node name="DesktopSection" type="VBoxContainer" parent="VBox"]
-theme_override_constants/separation = 4
-
-[node name="DesktopLabel" type="Label" parent="VBox/DesktopSection"]
-text = "Desktop"
-
-[node name="PinnedAppsVBox" type="VBoxContainer" parent="VBox/DesktopSection"]
-size_flags_horizontal = 3
-
-[node name="WindowIconsSection" type="VBoxContainer" parent="VBox"]
-theme_override_constants/separation = 4
-
-[node name="WindowIconsLabel" type="Label" parent="VBox/WindowIconsSection"]
-text = "Window Controls Icons"
-
-[node name="IconPicker" type="FileDialog" parent="."]
-access = 1
-mode = 0
-filters = PoolStringArray( "*.svg;Scalable Vector", "*.png;PNG", "*;All Files" )
-
-[node name="FontRow" type="HBoxContainer" parent="VBox/WindowIconsSection"]
-custom_minimum_size = Vector2(0, 36)
-
-[node name="FontLabel" type="Label" parent="VBox/WindowIconsSection/FontRow"]
-text = "UI Font"
-
-[node name="FontPath" type="LineEdit" parent="VBox/WindowIconsSection/FontRow"]
-size_flags_horizontal = 3
-
-[node name="FontBrowse" type="Button" parent="VBox/WindowIconsSection/FontRow"]
-text = "Browse"
-
-[node name="FontPicker" type="FileDialog" parent="."]
-access = 1
-mode = 0
-filters = PoolStringArray("*.ttf;TrueType", "*.otf;OpenType", "*;All Files")
-
-[node name="LanguageLabel" type="Label" parent="VBox/LanguageSection"]
-text = "Language"
-
-[node name="LanguageOption" type="OptionButton" parent="VBox/LanguageSection"]
-
-[node name="Actions" type="HBoxContainer" parent="VBox"]
+[node name="Actions" type="HBoxContainer" parent="MainLayout"]
+layout_mode = 2
 theme_override_constants/separation = 8
 
-[node name="ApplyButton" type="Button" parent="VBox/Actions"]
+[node name="ApplyButton" type="Button" parent="MainLayout/Actions"]
+layout_mode = 2
 text = "Apply"
 
-[node name="ResetButton" type="Button" parent="VBox/Actions"]
+[node name="ResetButton" type="Button" parent="MainLayout/Actions"]
+layout_mode = 2
 text = "Reset to Defaults"
 
+[node name="IconPicker" type="FileDialog" parent="."]
+title = "Open a File"
+size = Vector2i(452, 162)
+ok_button_text = "Open"
+file_mode = 0
+access = 1
+filters = PackedStringArray("*.svg;Scalable Vector", "*.png;PNG", "*;All Files")
+
+[node name="FontPicker" type="FileDialog" parent="."]
+title = "Open a File"
+size = Vector2i(452, 162)
+ok_button_text = "Open"
+file_mode = 0
+access = 1
+filters = PackedStringArray("*.ttf;TrueType", "*.otf;OpenType", "*;All Files")
+
 [node name="Toast" type="Label" parent="."]
+visible = false
+layout_mode = 0
 offset_left = 16.0
 offset_top = 420.0
 offset_right = 624.0
 offset_bottom = 444.0
 text = ""
-visible = false
 
 [node name="ToastTimer" type="Timer" parent="."]
 one_shot = true

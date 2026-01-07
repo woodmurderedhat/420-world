@@ -1,43 +1,59 @@
-[gd_scene load_steps=5 format=3]
+[gd_scene load_steps=5 format=3 uid="uid://do4yovdqgbx7i"]
 
-[ext_resource type="Script" path="res://scripts/desktop.gd" id="1_desktop"]
+[ext_resource type="Script" uid="uid://dtlloepfrs4rj" path="res://scripts/desktop.gd" id="1_desktop"]
 [ext_resource type="PackedScene" path="res://scenes/taskbar.tscn" id="2_taskbar_scene"]
 [ext_resource type="PackedScene" path="res://scenes/start_menu.tscn" id="3_start_menu_scene"]
-[ext_resource type="Script" path="res://scripts/window_manager.gd" id="4_window_manager"]
+[ext_resource type="Script" uid="uid://dxgj3yhb6t6lp" path="res://scripts/window_manager.gd" id="4_window_manager"]
 
 [node name="Desktop" type="Control"]
+layout_mode = 3
 anchors_preset = 0
 offset_right = 1080.0
 offset_bottom = 720.0
 script = ExtResource("1_desktop")
 
 [node name="DesktopLayer" type="TextureRect" parent="."]
-anchors_preset = 15
+layout_mode = 0
 offset_right = 1080.0
 offset_bottom = 720.0
 expand_mode = 1
 stretch_mode = 6
 
 [node name="Icons" type="VBoxContainer" parent="DesktopLayer"]
+layout_mode = 0
 offset_left = 16.0
 offset_top = 16.0
 offset_right = 200.0
 offset_bottom = 200.0
 
 [node name="HelloButton" type="Button" parent="DesktopLayer/Icons"]
+layout_mode = 2
 text = "Hello World"
 
 [node name="SettingsButton" type="Button" parent="DesktopLayer/Icons"]
+layout_mode = 2
 text = "Settings"
 
 [node name="WindowManager" type="Control" parent="."]
-anchors_preset = 15
+anchors_preset = 0
 offset_right = 1080.0
 offset_bottom = 676.0
 script = ExtResource("4_window_manager")
 
 [node name="Taskbar" parent="." instance=ExtResource("2_taskbar_scene")]
+layout_mode = 1
+anchors_preset = 7
+anchor_left = 0.5
+anchor_right = 0.5
+offset_left = -540.0
+offset_right = 540.0
+grow_horizontal = 2
+grow_vertical = 0
 
 [node name="StartMenu" parent="." instance=ExtResource("3_start_menu_scene")]
-offset_top = 260.0
-offset_bottom = 660.0
+layout_mode = 1
+anchor_top = 1.0
+anchor_bottom = 1.0
+offset_top = -444.0
+offset_bottom = -44.0
+grow_vertical = 0

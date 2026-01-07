@@ -10,8 +10,9 @@ script = ExtResource("1_game_window")
 
 [node name="TitleBar" type="HBoxContainer" parent="."]
 anchors_preset = 10
-offset_right = 640.0
+anchor_right = 1.0
 offset_bottom = 28.0
+grow_horizontal = 2
 size_flags_horizontal = 3
 
 [node name="Label" type="Label" parent="TitleBar"]
@@ -31,20 +32,26 @@ text = "Full"
 text = "X"
 
 [node name="ContentRoot" type="Control" parent="."]
+layout_mode = 1
 anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
 offset_top = 28.0
-offset_right = 640.0
-offset_bottom = 420.0
+grow_horizontal = 2
+grow_vertical = 2
 size_flags_horizontal = 3
 size_flags_vertical = 3
 
 [node name="InputBlocker" type="Control" parent="."]
-anchors_preset = 15
-offset_top = 28.0
-offset_right = 640.0
-offset_bottom = 420.0
-mouse_filter = 1
 visible = false
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_top = 28.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 1
 
 [node name="ResizeHandle" type="Control" parent="."]
 anchors_preset = 8
