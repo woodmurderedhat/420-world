@@ -1,6 +1,7 @@
-[gd_scene load_steps=2 format=3 uid="uid://desktopgameappid"]
+[gd_scene load_steps=3 format=3 uid="uid://cjdvfl5ft7jn0"]
 
-[ext_resource type="Script" path="res://apps/desktop_game/game.gd" id="1_script"]
+[ext_resource type="Script" uid="uid://c7gent4nh0i3v" path="res://apps/desktop_game/game.gd" id="1_script"]
+[ext_resource type="PackedScene" uid="uid://bs770q1q7rn54" path="res://apps/desktop_game/gamefiles/world.tscn" id="2_bx128"]
 
 [node name="DesktopGame" type="Control"]
 layout_mode = 3
@@ -27,3 +28,5 @@ offset_top = 64.0
 offset_right = 300.0
 offset_bottom = 87.0
 text = "Desktop Game Running as App"
+
+[node name="World" parent="." instance=ExtResource("2_bx128")]

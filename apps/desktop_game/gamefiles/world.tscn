@@ -1,0 +1,16 @@
+[gd_scene load_steps=2 format=3 uid="uid://bs770q1q7rn54"]
+
+[ext_resource type="TileSet" uid="uid://b3ksu2y6kc1ib" path="res://apps/desktop_game/gamefiles/tlesets/mainworld.tres" id="1_lsfyk"]
+
+[node name="World" type="Node2D"]
+
+[node name="TilesBackground" type="Node2D" parent="."]
+
+[node name="TileMapLayer" type="TileMapLayer" parent="TilesBackground"]
+tile_set = ExtResource("1_lsfyk")
+
+[node name="Buildings" type="Node2D" parent="."]
+
+[node name="Loot" type="Node2D" parent="."]
+
+[node name="Characters" type="Node2D" parent="."]
