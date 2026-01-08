@@ -1,0 +1,5 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="256" height="256" viewBox="0 0 256 256">
+  <rect width="256" height="256" fill="#f3f4f6"/>
+  <path d="M40 96 C80 20 176 20 216 96 L216 136 C160 80 96 80 40 136 Z" fill="#6b3" stroke="#333"/>
+  <text x="128" y="220" font-size="18" text-anchor="middle" fill="#333">Hair</text>
+</svg>

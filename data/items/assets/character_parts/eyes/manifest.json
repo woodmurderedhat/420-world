@@ -1,1 +1,1 @@
-{ "parts": [ { "id": "eyes_01", "name": "Classic eyes", "cost": 0, "texture_path": "../../../../icon.svg" } ] }
+{ "parts": [ { "id": "eyes_01", "name": "Classic eyes", "cost": 0, "texture_path": "icon.svg" } ] }

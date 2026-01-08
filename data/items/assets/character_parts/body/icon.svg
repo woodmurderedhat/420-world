@@ -1,0 +1,5 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="256" height="256" viewBox="0 0 256 256">
+  <rect width="256" height="256" fill="#fff"/>
+  <rect x="72" y="84" width="112" height="110" rx="12" fill="#f5c6a5" stroke="#333"/>
+  <text x="128" y="220" font-size="18" text-anchor="middle" fill="#333">Body</text>
+</svg>

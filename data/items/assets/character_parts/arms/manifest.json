@@ -1,1 +1,1 @@
-{ "parts": [ { "id": "arms_01", "name": "Classic arms", "cost": 0, "texture_path": "../../../../icon.svg" } ] }
+{ "parts": [ { "id": "arms_01", "name": "Classic arms", "cost": 0, "texture_path": "icon.svg" } ] }

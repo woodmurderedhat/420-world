@@ -1,0 +1,5 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="256" height="256" viewBox="0 0 256 256">
+  <rect width="256" height="256" fill="#fff7f0"/>
+  <path d="M64 140 Q128 180 192 140" stroke="#a33" stroke-width="8" fill="none" stroke-linecap="round"/>
+  <text x="128" y="220" font-size="18" text-anchor="middle" fill="#333">Mouth</text>
+</svg>

@@ -1,0 +1,6 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="256" height="256" viewBox="0 0 256 256">
+  <rect width="256" height="256" fill="#eef2ff"/>
+  <rect x="80" y="96" width="32" height="120" rx="8" fill="#b7c1d9"/>
+  <rect x="144" y="96" width="32" height="120" rx="8" fill="#b7c1d9"/>
+  <text x="128" y="220" font-size="18" text-anchor="middle" fill="#333">Legs</text>
+</svg>

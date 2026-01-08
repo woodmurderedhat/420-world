@@ -2,10 +2,10 @@ extends "res://scripts/app_base.gd"
 
 # inventory_main.gd - App Controller
 
-@onready var view = $Content/View
-@onready var currency_lbl = $Content/Footer/CurrencyLabel
-@onready var auto_sort_btn = $Content/Footer/AutoSortCheck
-@onready var sort_opt = $Content/Footer/SortOption
+@onready var view = $MainLayout/View
+@onready var currency_lbl = $MainLayout/Footer/CurrencyLabel
+@onready var auto_sort_btn = $MainLayout/Footer/AutoSortCheck
+@onready var sort_opt = $MainLayout/Footer/SortOption
 
 func _ready() -> void:
 

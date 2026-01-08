@@ -33,9 +33,7 @@ static func render_character(body_parts: Dictionary) -> Texture2D:
 				if src_img != null:
 					if src_img.get_size() != Vector2i(32,32):
 						# scale the source image into a 32x32 buffer
-						src_img.lock()
 						src_img.resize(32, 32)
-						src_img.unlock()
 					canvas.blit_rect(src_img, Rect2(Vector2.ZERO, src_img.get_size()), Vector2.ZERO)
 
 	# Convert to texture and cache

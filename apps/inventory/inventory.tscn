@@ -13,7 +13,7 @@ grow_horizontal = 2
 grow_vertical = 2
 script = ExtResource("1_main")
 
-[node name="Content" type="VBoxContainer" parent="."]
+[node name="MainLayout" type="VBoxContainer" parent="."]
 layout_mode = 1
 anchors_preset = 15
 anchor_right = 1.0
@@ -21,13 +21,18 @@ anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
 
-[node name="View" type="Control" parent="Content"]
+[node name="Title" type="Label" parent="MainLayout"]
+layout_mode = 2
+text = "Inventory"
+horizontal_alignment = 1
+
+[node name="View" type="Control" parent="MainLayout"]
 layout_mode = 2
 size_flags_vertical = 3
 script = ExtResource("2_view")
 slot_scene = ExtResource("3_slot")
 
-[node name="TabContainer" type="TabContainer" parent="Content/View"]
+[node name="TabContainer" type="TabContainer" parent="MainLayout/View"]
 layout_mode = 1
 anchors_preset = 15
 anchor_right = 1.0
@@ -35,58 +40,58 @@ anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
 
-[node name="All" type="ScrollContainer" parent="Content/View/TabContainer"]
+[node name="All" type="ScrollContainer" parent="MainLayout/View/TabContainer"]
 layout_mode = 2
 
-[node name="GridContainer" type="GridContainer" parent="Content/View/TabContainer/All"]
+[node name="GridContainer" type="GridContainer" parent="MainLayout/View/TabContainer/All"]
 layout_mode = 2
 size_flags_horizontal = 3
 size_flags_vertical = 3
 columns = 6
 
-[node name="Resources" type="ScrollContainer" parent="Content/View/TabContainer"]
+[node name="Resources" type="ScrollContainer" parent="MainLayout/View/TabContainer"]
 visible = false
 layout_mode = 2
 
-[node name="GridContainer" type="GridContainer" parent="Content/View/TabContainer/Resources"]
+[node name="GridContainer" type="GridContainer" parent="MainLayout/View/TabContainer/Resources"]
 layout_mode = 2
 size_flags_horizontal = 3
 size_flags_vertical = 3
 columns = 6
 
-[node name="Consumables" type="ScrollContainer" parent="Content/View/TabContainer"]
+[node name="Consumables" type="ScrollContainer" parent="MainLayout/View/TabContainer"]
 visible = false
 layout_mode = 2
 
-[node name="GridContainer" type="GridContainer" parent="Content/View/TabContainer/Consumables"]
+[node name="GridContainer" type="GridContainer" parent="MainLayout/View/TabContainer/Consumables"]
 layout_mode = 2
 size_flags_horizontal = 3
 size_flags_vertical = 3
 columns = 6
 
-[node name="Equipment" type="ScrollContainer" parent="Content/View/TabContainer"]
+[node name="Equipment" type="ScrollContainer" parent="MainLayout/View/TabContainer"]
 visible = false
 layout_mode = 2
 
-[node name="GridContainer" type="GridContainer" parent="Content/View/TabContainer/Equipment"]
+[node name="GridContainer" type="GridContainer" parent="MainLayout/View/TabContainer/Equipment"]
 layout_mode = 2
 size_flags_horizontal = 3
 size_flags_vertical = 3
 columns = 6
 
-[node name="Footer" type="HBoxContainer" parent="Content"]
+[node name="Footer" type="HBoxContainer" parent="MainLayout"]
 layout_mode = 2
 theme_override_constants/separation = 10
 alignment = 2
 
-[node name="CurrencyLabel" type="Label" parent="Content/Footer"]
+[node name="CurrencyLabel" type="Label" parent="MainLayout/Footer"]
 layout_mode = 2
 text = "Currency: 0"
 
-[node name="VSeparator" type="VSeparator" parent="Content/Footer"]
+[node name="VSeparator" type="VSeparator" parent="MainLayout/Footer"]
 layout_mode = 2
 
-[node name="SortOption" type="OptionButton" parent="Content/Footer"]
+[node name="SortOption" type="OptionButton" parent="MainLayout/Footer"]
 layout_mode = 2
 item_count = 3
 selected = 0
@@ -97,6 +102,6 @@ popup/item_1/id = 1
 popup/item_2/text = "Type"
 popup/item_2/id = 2
 
-[node name="AutoSortCheck" type="CheckButton" parent="Content/Footer"]
+[node name="AutoSortCheck" type="CheckButton" parent="MainLayout/Footer"]
 layout_mode = 2
 text = "Auto-Sort"

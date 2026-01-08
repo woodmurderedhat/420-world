@@ -1,0 +1,8 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="256" height="256" viewBox="0 0 256 256">
+  <rect width="256" height="256" fill="#f8fafc"/>
+  <circle cx="88" cy="112" r="28" fill="#fff" stroke="#333" stroke-width="3"/>
+  <circle cx="168" cy="112" r="28" fill="#fff" stroke="#333" stroke-width="3"/>
+  <circle cx="88" cy="112" r="10" fill="#333"/>
+  <circle cx="168" cy="112" r="10" fill="#333"/>
+  <text x="128" y="220" font-size="18" text-anchor="middle" fill="#333">Eyes</text>
+</svg>
