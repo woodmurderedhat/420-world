@@ -26,6 +26,14 @@ var THEMES: Dictionary = {
 var current_theme: StringName = "light"
 var _font: Font = null
 
+# Card / UI style constants (tweakable)
+var CARD_CORNER_RADIUS: int = 8
+var CARD_BORDER_WIDTH: int = 1
+var CARD_PADDING_LEFT: int = 8
+var CARD_PADDING_RIGHT: int = 8
+var CARD_PADDING_TOP: int = 6
+var CARD_PADDING_BOTTOM: int = 6
+
 # Icon and sizing defaults
 const DEFAULT_ICON_SIZE: int = 32
 var icon_scale: float = 1.0
@@ -199,6 +207,48 @@ func get_font() -> Font:
 func get_palette() -> Dictionary:
 	return THEMES.get(current_theme, THEMES["light"])
 
+# --- Card styleboxes for UI consistency ---
+func get_card_stylebox() -> StyleBoxFlat:
+	var pal = get_palette()
+	var sb: StyleBoxFlat = StyleBoxFlat.new()
+	# use panel color with slight contrast
+	sb.bg_color = pal.get("panel", Color(0.9,0.9,0.9))
+	# Use configurable constants
+	sb.corner_radius_top_left = CARD_CORNER_RADIUS
+	sb.corner_radius_top_right = CARD_CORNER_RADIUS
+	sb.corner_radius_bottom_left = CARD_CORNER_RADIUS
+	sb.corner_radius_bottom_right = CARD_CORNER_RADIUS
+	sb.border_width_left = CARD_BORDER_WIDTH
+	sb.border_width_top = CARD_BORDER_WIDTH
+	sb.border_width_right = CARD_BORDER_WIDTH
+	sb.border_width_bottom = CARD_BORDER_WIDTH
+	sb.border_color = pal.get("accent_soft", Color(0.8,0.8,0.8))
+	sb.content_margin_left = CARD_PADDING_LEFT
+	sb.content_margin_right = CARD_PADDING_RIGHT
+	sb.content_margin_top = CARD_PADDING_TOP
+	sb.content_margin_bottom = CARD_PADDING_BOTTOM
+	return sb
+
+func get_card_hover_stylebox() -> StyleBoxFlat:
+	var pal = get_palette()
+	var sb: StyleBoxFlat = StyleBoxFlat.new()
+	# Slightly lighter / accented on hover
+	sb.bg_color = pal.get("accent_soft", Color(0.95,0.95,1.0))
+	# Use configurable constants
+	sb.corner_radius_top_left = CARD_CORNER_RADIUS
+	sb.corner_radius_top_right = CARD_CORNER_RADIUS
+	sb.corner_radius_bottom_left = CARD_CORNER_RADIUS
+	sb.corner_radius_bottom_right = CARD_CORNER_RADIUS
+	sb.border_width_left = CARD_BORDER_WIDTH
+	sb.border_width_top = CARD_BORDER_WIDTH
+	sb.border_width_right = CARD_BORDER_WIDTH
+	sb.border_width_bottom = CARD_BORDER_WIDTH
+	sb.border_color = pal.get("accent", Color(0.12,0.53,0.98))
+	sb.content_margin_left = CARD_PADDING_LEFT
+	sb.content_margin_right = CARD_PADDING_RIGHT
+	sb.content_margin_top = CARD_PADDING_TOP
+	sb.content_margin_bottom = CARD_PADDING_BOTTOM
+	return sb
 
 func _apply_settings_theme() -> void:
 	var settings := get_tree().root.get_node_or_null("/root/SettingsManager")

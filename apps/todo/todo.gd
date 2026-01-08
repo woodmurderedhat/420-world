@@ -1,4 +1,4 @@
-extends AppBase
+extends "res://scripts/app_base.gd"
 
 var _items: Array = []  # Array[Dictionary]
 

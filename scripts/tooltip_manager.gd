@@ -61,6 +61,13 @@ func show_tooltip(text: String, global_pos: Vector2, duration: float = 3.0) -> v
 	_timer.wait_time = duration
 	_timer.start()
 
+# For tests and UI assertions
+func is_visible() -> bool:
+	return _panel.visible
+
+func get_text() -> String:
+	return _label.text
+
 
 func hide_tooltip() -> void:
 	_timer.stop()
@@ -69,3 +76,16 @@ func hide_tooltip() -> void:
 
 func _on_timer_timeout() -> void:
 	_panel.visible = false
+
+
+func _exit_tree() -> void:
+	# Cleanup dynamically created UI to avoid leaked CanvasItem RIDs
+	if _timer != null and is_instance_valid(_timer):
+		_timer.stop()
+		_timer.queue_free()
+		_timer = null
+	if _panel != null and is_instance_valid(_panel):
+		_panel.queue_free()
+		_panel = null
+	if _label != null:
+		_label = null

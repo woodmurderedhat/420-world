@@ -1,0 +1,9 @@
+{
+	"id": "gold_coin",
+	"name": "Gold Coin",
+	"description": "Standard currency.",
+	"category": "resource",
+	"stackable": true,
+	"value": 1,
+	"icon": "icon.svg"
+}

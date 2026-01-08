@@ -1,0 +1,15 @@
+{
+	"id": "inventory",
+	"name": "Inventory",
+	"entry_scene": "res://apps/inventory/inventory.tscn",
+	"icon": "res://assets/icons/image_viewer.svg",
+	"category": "System",
+	"description": "Manage your items and resources.",
+	"version": "1.0.0",
+	"window": {
+		"title": "Inventory",
+		"width": 500,
+		"height": 400,
+		"resizable": true
+	}
+}

@@ -2,7 +2,7 @@
 name: Plan
 description: Researches and outlines multi-step plans
 argument-hint: Outline the goal or problem to research
-tools: ['search', 'github/github-mcp-server/get_issue', 'github/github-mcp-server/get_issue_comments', 'runSubagent', 'usages', 'problems', 'changes', 'testFailure', 'fetch', 'githubRepo', 'github.vscode-pull-request-github/issue_fetch', 'github.vscode-pull-request-github/activePullRequest']
+tools: ['search', 'runSubagent']
 handoffs:
   - label: Start Implementation
     agent: agent
@@ -63,7 +63,7 @@ The user needs an easy to read, concise and focused plan. Follow this template (
 {Brief TL;DR of the plan — the what, how, and why. (20–100 words)}
 
 ### Steps {3–6 steps, 5–20 words each}
-1. {Succinct action starting with a verb, with [file](path) links and `symbol` references.}
+1. {Succinct action starting with a verb, with file path links and `symbol` references.}
 2. {Next concrete step.}
 3. {Another short actionable step.}
 4. {…}

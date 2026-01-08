@@ -1,4 +1,4 @@
-extends AppBase
+extends "res://scripts/app_base.gd"
 
 var _pending_icon_key: String = ""
 
@@ -352,8 +352,7 @@ func _apply() -> void:
 		fsel = UIHelpers.safe_text(font_path).strip_edges()
 	SettingsManager.set_value("ui.font", fsel)
 	# Apply immediately
-	var tm := get_tree().root.get_node_or_null("/root/ThemeManager")
-	if tm != null:
+	if is_instance_valid(tm):
 		tm.set_font(fsel)
 
 

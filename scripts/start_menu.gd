@@ -73,7 +73,7 @@ func _unhandled_input(event: InputEvent) -> void:
 			_focus_prev_app_item()
 			return
 		if event.keycode == KEY_ENTER or event.keycode == KEY_KP_ENTER:
-			var f: Node = get_tree().get_focus_owner() as Node
+			var f: Node = get_tree().root.get_focus_owner() as Node
 			if f and f is Button:
 				(f as Button).emit_signal("pressed")
 				return
@@ -218,7 +218,7 @@ func _add_section(title: String, manifests: Array) -> void:
 		apps_box.add_child(b)
 
 
-func _position_near_start(start_global: Vector2, start_size: Vector2) -> void:
+func _position_near_start(_start_global: Vector2, _start_size: Vector2) -> void:
 	# Place menu anchored to Start button top-left, prefer above taskbar if space.
 	#var menu_size := get_combined_minimum_size()
 	#var viewport_rect := get_viewport_rect()
@@ -312,7 +312,7 @@ func _focus_next_app_item() -> void:
 	var items: Array = _get_app_items()
 	if items.is_empty():
 		return
-	var cur: Control = get_tree().get_focus_owner() as Control
+	var cur: Control = get_tree().root.get_focus_owner() as Control
 	var idx: int = items.find(cur) if cur in items else -1
 	var next: Control = items[(idx + 1) % items.size()]
 	next.grab_focus()
@@ -322,7 +322,7 @@ func _focus_prev_app_item() -> void:
 	var items: Array = _get_app_items()
 	if items.is_empty():
 		return
-	var cur: Control = get_tree().get_focus_owner() as Control
+	var cur: Control = get_tree().root.get_focus_owner() as Control
 	var idx: int = items.find(cur) if cur in items else items.size()
 	var prev: Control = items[(idx - 1 + items.size()) % items.size()]
 	prev.grab_focus()

@@ -1,0 +1,21 @@
+{
+  "name": "Mage",
+  "body_parts": {
+    "head": "head_01",
+    "eyes": "eyes_01",
+    "mouth": "mouth_01",
+    "hair": "hair_01",
+    "arms": "arms_01",
+    "hands": "hands_01",
+    "legs": "legs_01",
+    "feet": "feet_01"
+  },
+  "suggested_stats": {
+    "gold": 8,
+    "agility": 8,
+    "strength": 5,
+    "intelligence": 18,
+    "constitution": 8,
+    "luck": 10
+  }
+}

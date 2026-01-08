@@ -1,4 +1,4 @@
-extends AppBase
+extends "res://scripts/app_base.gd"
 
 const IMAGES := {
 	"Shell Icon": "res://icon.svg",

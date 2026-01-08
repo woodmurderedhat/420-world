@@ -1,0 +1,10 @@
+{
+	"parts": [
+		{
+			"id": "body_classic",
+			"name": "Classic Body",
+			"cost": 0,
+			"texture_path": "../../../../icon.svg"
+		}
+	]
+}

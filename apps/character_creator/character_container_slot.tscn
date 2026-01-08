@@ -1,0 +1,11 @@
+[gd_scene load_steps=3 format=3]
+
+[node name="ContainerSlot" type="PanelContainer"]
+
+[node name="Icon" type="TextureRect" parent="."]
+stretch_mode = 1
+custom_minimum_size = Vector2(40,40)
+
+[node name="Amount" type="Label" parent="."]
+rect_position = Vector2(26, 26)
+text = ""

@@ -119,7 +119,14 @@ func _default_global() -> Dictionary:
 	return {
 		"schema_version": SCHEMA_VERSION,
 		"settings": {},
-		"inventory": {},
+		"inventory_slots": [], # Slot-based inventory
+		"inventory_meta": {}, # sort preferences etc
+		"user_data": { # UserManager data
+			"currency": 0,
+			"max_slots": 20,
+			"level": 1,
+			"experience": 0
+		}
 	}
 
 

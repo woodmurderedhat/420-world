@@ -1,0 +1,11 @@
+{
+	"id": "health_potion",
+	"name": "Health Potion",
+	"description": "Restores 50 HP.",
+	"category": "consumable",
+	"stackable": true,
+	"value": 20,
+	"actions": [
+		{ "label": "Drink", "event": "drink_potion" }
+	]
+}

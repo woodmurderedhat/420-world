@@ -29,7 +29,6 @@ var focused_id: String = ""
 
 var _last_rect_by_app: Dictionary = {}  # app_id -> Rect2
 var _cascade_offset: Vector2 = Vector2.ZERO
-var _snap_preview: ColorRect = null
 var _snap_panel: PanelContainer = null
 var _snap_fill: ColorRect = null
 
@@ -97,14 +96,23 @@ func open_window(
 
 	var app_node := win.set_content(scene)
 	var save_mgr := get_tree().root.get_node_or_null("/root/SaveManager")
-	if app_node is AppBase:
-		app_node.metadata = manifest
-		if save_mgr != null:
+	if app_node != null and app_node.has_method("launch"):
+		# Best-effort metadata assignment if supported by the app root
+		var has_metadata_prop: bool = false
+		if app_node != null:
+			for p in app_node.get_property_list():
+				if typeof(p) == TYPE_DICTIONARY and p.has("name") and String(p["name"]) == "metadata":
+					has_metadata_prop = true
+					break
+		if has_metadata_prop:
+			# Use set() to assign safely so we don't call nonexistent members
+			app_node.set("metadata", manifest)
+		if save_mgr != null and app_node.has_method("load_state"):
 			var saved_state: Dictionary = save_mgr.load_app(app_id)
 			app_node.load_state(saved_state.get("state", {}))
 		app_node.launch(params)
 	else:
-		Log.warn("WindowManager: app root does not extend AppBase (%s)" % app_id)
+		Log.warn("WindowManager: app root does not behave like AppBase (%s)" % app_id)
 
 	z_counter += 1
 	win.z_index = z_counter
@@ -143,7 +151,7 @@ func _focus_window(id: String) -> void:
 		var prev_win: GameWindowPanel = windows[prev]["node"] as GameWindowPanel
 		prev_win.set_focused(false)
 		var prev_app: Node = windows[prev].get("app_node")
-		if prev_app is AppBase:
+		if prev_app != null and prev_app.has_method("pause"):
 			prev_app.pause()
 
 	z_counter += 1
@@ -155,7 +163,7 @@ func _focus_window(id: String) -> void:
 	windows[id]["state"] = STATE_FOCUSED
 
 	var app: Node = windows[id].get("app_node")
-	if app is AppBase:
+	if app != null and app.has_method("resume"):
 		app.resume()
 
 	emit_signal("window_focused", id)
@@ -178,7 +186,7 @@ func close_window(id: String) -> void:
 		return
 	var app_id: String = windows[id]["app_id"]
 	var app: Node = windows[id].get("app_node")
-	if app is AppBase:
+	if app != null and app.has_method("save_state"):
 		var state: Dictionary = app.save_state()
 		var sm := get_tree().root.get_node_or_null("/root/SaveManager")
 		if sm != null:
@@ -189,11 +197,12 @@ func close_window(id: String) -> void:
 			"restore_rect", Rect2(win.global_position, win.size)
 		)
 		_last_rect_by_app[app_id] = rect_to_store
+	# Visual feedback before freeing the window
+	UIHelpers.safe_set_color(win, Color(0.95, 0.35, 0.35, 1))
 	win.queue_free()
 	windows.erase(id)
 	if focused_id == id:
 		focused_id = ""
-	UIHelpers.safe_set_color(win, Color(0.95, 0.35, 0.35, 1))
 	emit_signal("window_closed", id)
 
 
@@ -215,7 +224,7 @@ func minimize_window(id: String) -> void:
 		if focused_id == id:
 			focused_id = ""
 		var app: Node = windows[id].get("app_node")
-		if app is AppBase:
+		if app != null and app.has_method("pause"):
 			app.pause()
 		emit_signal("window_minimized", id)
 
@@ -472,7 +481,15 @@ func _hide_snap_preview() -> void:
 			. set_trans(Tween.TRANS_QUAD)
 			. set_ease(Tween.EASE_IN)
 		)
-		t.finished.connect(func(): _snap_panel.visible = false)
+		# After hide animation, free the preview nodes to release CanvasItem RIDs
+		t.finished.connect(func():
+			if _snap_panel != null and is_instance_valid(_snap_panel):
+				_snap_panel.queue_free()
+				_snap_panel = null
+			if _snap_fill != null and is_instance_valid(_snap_fill):
+				_snap_fill.queue_free()
+				_snap_fill = null
+		)
 
 
 func _apply_snap_if_needed(id: String) -> void:
@@ -538,3 +555,13 @@ func _warn_permissions(manifest: Dictionary) -> void:
 			)
 		else:
 			Log.info("[Permissions] %s requests %s (not enforced)" % [app_id, pname])
+
+
+func _exit_tree() -> void:
+	# Ensure any transient preview nodes are freed to avoid CanvasItem RIDs lingering
+	if _snap_panel != null and is_instance_valid(_snap_panel):
+		_snap_panel.queue_free()
+		_snap_panel = null
+	if _snap_fill != null and is_instance_valid(_snap_fill):
+		_snap_fill.queue_free()
+		_snap_fill = null

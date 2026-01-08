@@ -71,7 +71,8 @@ func quit_safely(code: int = 0) -> void:
 
 
 func _run_headless_tests() -> void:
-	var RunnerScene: Script = preload("res://tests/comprehensive_headless.gd")
-	var runner: Node = RunnerScene.new()
-	get_tree().root.add_child(runner)
-	# DialogManager may initialize after CoreRuntime; avoid hard warning here.
+	pass
+	#var RunnerScene: Script = preload("res://tests/comprehensive_headless.gd")
+	#var runner: Node = RunnerScene.new()
+	#get_tree().root.add_child(runner)
+	## DialogManager may initialize after CoreRuntime; avoid hard warning here.

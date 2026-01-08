@@ -1,4 +1,4 @@
-extends AppBase
+extends "res://scripts/app_base.gd"
 
 @onready var text_area: TextEdit = $MainLayout/TextArea
 @onready var status_label: Label = $MainLayout/Status

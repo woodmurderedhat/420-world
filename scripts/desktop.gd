@@ -1,4 +1,4 @@
-class_name DesktopUI
+class_name DesktopRootUI
 extends Control
 
 var _palette: Dictionary = {}
@@ -58,6 +58,12 @@ func _ready() -> void:
 		theme_mgr.theme_changed.connect(func(_name, palette): _apply_theme(palette))
 	
 	_load_background_game()
+
+	# Diagnostic snapshot to help find invisible UI issues
+	var vp_size: Vector2 = Vector2.ZERO
+	if get_viewport() != null:
+		vp_size = get_viewport_rect().size
+	Log.info("Desktop: diagnostics visible=%s global_pos=%s scale=%s viewport_size=%s taskbar_visible=%s taskbar_z=%d wm_children=%d bg_children=%d" % [str(self.visible), str(self.get_global_position()), str(self.scale), str(vp_size), str(taskbar.visible), int(taskbar.z_index), int(window_manager.get_child_count()), int(background_viewport.get_child_count())])
 
 func _on_pin_app_requested(app_id: String, pin: bool) -> void:
 	var settings := get_tree().root.get_node_or_null("/root/SettingsManager")
@@ -314,3 +320,13 @@ func _load_background_game() -> void:
 		if instance.has_method("launch"):
 			instance.launch({})
 		Log.info("Desktop: Loaded background game")
+
+
+func _exit_tree() -> void:
+	# Cleanup background SubViewport children to ensure Viewport textures are freed
+	if background_viewport != null and is_instance_valid(background_viewport):
+		for c in background_viewport.get_children():
+			if is_instance_valid(c):
+				c.queue_free()
+		# Also free any lingering render targets on the SubViewport
+		background_viewport.force_draw = false

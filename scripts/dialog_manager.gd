@@ -83,6 +83,18 @@ func _finish_toast() -> void:
 	_toast_panel.visible = false
 
 
+func _exit_tree() -> void:
+	# Ensure toast panel and timer are freed
+	if _toast_timer != null and is_instance_valid(_toast_timer):
+		_toast_timer.stop()
+		_toast_timer.queue_free()
+		_toast_timer = null
+	if _toast_panel != null and is_instance_valid(_toast_panel):
+		_toast_panel.queue_free()
+		_toast_panel = null
+	_toast_label = null
+
+
 # Modal alert dialog (simple blocking callback)
 func show_alert(title: String, message: String) -> void:
 	var pnl: AcceptDialog = AcceptDialog.new()

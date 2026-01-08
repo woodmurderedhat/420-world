@@ -27,6 +27,11 @@ InventoryManager="*res://scripts/inventory_manager.gd"
 ThemeManager="*res://scripts/theme_manager.gd"
 TooltipManager="*res://scripts/tooltip_manager.gd"
 DialogManager="*res://scripts/dialog_manager.gd"
+UserManager="*res://scripts/user_manager.gd"
+ItemRegistry="*res://scripts/item_registry.gd"
+ProgressionManager="*res://scripts/progression_manager.gd"
+CharacterManager="*res://scripts/character_manager.gd"
+BodyPartRegistry="*res://scripts/body_part_registry.gd"
 
 [display]
 

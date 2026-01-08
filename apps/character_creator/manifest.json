@@ -1,0 +1,17 @@
+{
+	"id": "character_creator",
+	"name": "Character Creator",
+	"entry_scene": "res://apps/character_creator/character_creator.tscn",
+	"icon": "res://assets/icons/default_app.svg",
+	"category": "Tools",
+	"description": "Create and customize pixel characters.",
+	"version": "1.0",
+	"author": "System",
+	"permissions": ["inventory", "character_stats", "body_parts"],
+	"window": {
+		"title": "Character Creator",
+		"width": 900,
+		"height": 600,
+		"resizable": true
+	}
+}

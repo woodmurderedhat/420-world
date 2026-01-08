@@ -130,3 +130,21 @@ static func safe_set_modulate(node: Node, c: Color) -> void:
 		return
 	if "modulate" in node:
 		node.modulate = c
+
+static func get_focus_owner() -> Node:
+	# Use Engine.get_main_loop() since static funcs don't have get_tree()
+	var tree := Engine.get_main_loop() as SceneTree
+	if tree == null:
+		return null
+	var rt = tree.root
+	if rt != null and rt.has_method("get_focus_owner"):
+		return rt.get_focus_owner()
+	if tree.has_method("get_focus_owner"):
+		return tree.get_focus_owner()
+	# Try children that may expose focus APIs (e.g., Window/Viewports)
+	for c in rt.get_children():
+		if c.has_method("get_focus_owner"):
+			var fo = c.get_focus_owner()
+			if fo != null:
+				return fo
+	return null

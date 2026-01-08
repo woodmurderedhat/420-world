@@ -2,7 +2,7 @@
 
 [ext_resource type="Script" uid="uid://dtlloepfrs4rj" path="res://scripts/desktop.gd" id="1_desktop"]
 [ext_resource type="PackedScene" path="res://scenes/taskbar.tscn" id="2_taskbar_scene"]
-[ext_resource type="PackedScene" path="res://scenes/start_menu.tscn" id="3_start_menu_scene"]
+[ext_resource type="PackedScene" uid="uid://wbgrssv8kpyl" path="res://scenes/start_menu.tscn" id="3_start_menu_scene"]
 [ext_resource type="Script" uid="uid://dxgj3yhb6t6lp" path="res://scripts/window_manager.gd" id="4_window_manager"]
 
 [node name="Desktop" type="Control"]
@@ -25,11 +25,11 @@ stretch = true
 
 [node name="BackgroundViewport" type="SubViewport" parent="BackgroundViewportContainer"]
 handle_input_locally = false
-size = Vector2i(1152, 648)
+size = Vector2i(1080, 720)
 render_target_update_mode = 4
 
 [node name="WindowManager" type="Control" parent="."]
-anchors_preset = 15
+anchors_preset = 0
 anchor_right = 1.0
 anchor_bottom = 1.0
 grow_horizontal = 2
@@ -40,22 +40,16 @@ script = ExtResource("4_window_manager")
 [node name="Taskbar" parent="." instance=ExtResource("2_taskbar_scene")]
 layout_mode = 1
 anchors_preset = 12
-anchor_top = 1.0
-anchor_bottom = 1.0
-offset_left = 0.0
-offset_top = -44.0
+anchor_right = 1.0
 offset_right = 0.0
-offset_bottom = 0.0
 grow_horizontal = 2
 grow_vertical = 0
 
 [node name="StartMenu" parent="." instance=ExtResource("3_start_menu_scene")]
-visible = false
 layout_mode = 1
+anchors_preset = 2
 anchor_top = 1.0
 anchor_bottom = 1.0
-offset_left = 0.0
 offset_top = -444.0
-offset_right = 320.0
 offset_bottom = -44.0
 grow_vertical = 0

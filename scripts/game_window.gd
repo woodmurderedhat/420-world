@@ -96,7 +96,7 @@ func apply_palette(palette: Dictionary) -> void:
 	_palette = palette
 	var panel_color: Color = palette.get("panel", Color(0.12, 0.13, 0.17)) as Color
 	var text: Color = palette.get("text", Color.WHITE) as Color
-	var accent: Color = palette.get("accent", Color(0.2, 0.6, 1.0)) as Color
+	var _accent: Color = palette.get("accent", Color(0.2, 0.6, 1.0)) as Color
 
 	# Window Background with Shadow
 	var style: StyleBoxFlat = StyleBoxFlat.new()
@@ -139,7 +139,7 @@ func apply_palette(palette: Dictionary) -> void:
 		if f != null:
 			$TitleBar/Label.add_theme_font_override("font", f)
 
-	var btns: Array = [
+	var _btns: Array = [
 		$TitleBar/CloseButton, $TitleBar/MinButton, $TitleBar/MaxButton, $TitleBar/FullButton
 	]
 	# Load icon overrides from SettingsManager or manifest (modular/user-definable)
