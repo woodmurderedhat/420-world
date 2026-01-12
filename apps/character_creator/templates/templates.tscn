@@ -1,0 +1,10 @@
+[gd_scene load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://apps/character_creator/templates/character_templates_ui.gd" id="1"]
+
+[node name="CharacterTemplatesApp" type="HBoxContainer"]
+script = ExtResource( 1 )
+
+[node name="TemplatesRow" type="HBoxContainer" parent="."]
+
+[connection signal="ready" from="." to="." method="_ready"]

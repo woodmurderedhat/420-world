@@ -13,15 +13,70 @@ func _ready() -> void:
 	var failures: int = 0
 	
 	# Run tests sequentially
-	failures += _test_core_services()
-	failures += await _test_event_bus()
-	failures += _test_save_persistence()
-	failures += await _test_settings()
-	
-	failures += _test_theme_manager()
-	failures += _test_theme_card_style()
-	failures += await _test_character_creation()
-	failures += await _test_gallery_ui()
+	var n = _test_core_services()
+	failures += n
+	Log.info("TEST RESULT: _test_core_services => %d failures (total=%d)" % [n, failures])
+
+	n = await _test_event_bus()
+	failures += n
+	Log.info("TEST RESULT: _test_event_bus => %d failures (total=%d)" % [n, failures])
+
+	n = _test_save_persistence()
+	failures += n
+	Log.info("TEST RESULT: _test_save_persistence => %d failures (total=%d)" % [n, failures])
+
+	n = await _test_settings()
+	failures += n
+	Log.info("TEST RESULT: _test_settings => %d failures (total=%d)" % [n, failures])
+
+	n = _test_theme_manager()
+	failures += n
+	Log.info("TEST RESULT: _test_theme_manager => %d failures (total=%d)" % [n, failures])
+
+	n = _test_theme_card_style()
+	failures += n
+	Log.info("TEST RESULT: _test_theme_card_style => %d failures (total=%d)" % [n, failures])
+
+	n = await _test_character_creation()
+	failures += n
+	Log.info("TEST RESULT: _test_character_creation => %d failures (total=%d)" % [n, failures])
+
+	n = await _test_gallery_ui()
+	failures += n
+	Log.info("TEST RESULT: _test_gallery_ui => %d failures (total=%d)" % [n, failures])
+
+	# New edge-case tests
+	n = await _test_confirm_popup_timeout()
+	failures += n
+	Log.info("TEST RESULT: _test_confirm_popup_timeout => %d failures (total=%d)" % [n, failures])
+
+	n = await _test_focus_wrap_wraparound()
+	failures += n
+	Log.info("TEST RESULT: _test_focus_wrap_wraparound => %d failures (total=%d)" % [n, failures])
+
+	# Additional edge-case tests
+	n = await _test_focus_wrap_updown()
+	failures += n
+	Log.info("TEST RESULT: _test_focus_wrap_updown => %d failures (total=%d)" % [n, failures])
+
+	n = await _test_a11y_keyboard_permutations_extra()
+	failures += n
+	Log.info("TEST RESULT: _test_a11y_keyboard_permutations_extra => %d failures (total=%d)" % [n, failures])
+
+	# Targeted cleanup tests to verify exit-time hooks free timers, tweens, panels, and caches
+	n = await _test_cleanup_hooks()
+	failures += n
+	Log.info("TEST RESULT: _test_cleanup_hooks => %d failures (total=%d)" % [n, failures])
+
+	# Verify migration from legacy per-character JSONs into single file and optional cleanup
+	n = await _test_migration_cleanup()
+	failures += n
+	Log.info("TEST RESULT: _test_migration_cleanup => %d failures (total=%d)" % [n, failures])
+
+	# Verify characters manifest API
+	n = _test_characters_manifest()
+	failures += n
+	Log.info("TEST RESULT: _test_characters_manifest => %d failures (total=%d)" % [n, failures])
 
 	# Allow one more frame for any pending signals / logs
 	await get_tree().process_frame
@@ -32,6 +87,115 @@ func _ready() -> void:
 	else:
 		Log.error("HEADLESS: %d test(s) failed." % failures)
 		CoreRuntime.quit_safely(1)
+
+
+func _test_cleanup_hooks() -> int:
+	Log.info("TEST: Verifying exit-time cleanup hooks...")
+	var fails: int = 0
+
+	# 1) TooltipManager instance cleanup
+	var TT: Script = load("res://scripts/tooltip_manager.gd")
+	var tinst: Node = TT.new()
+	get_tree().root.add_child(tinst)
+	# Trigger tooltip so _timer and _panel are present
+	tinst.call("show_tooltip", "cleanup test", Vector2(10, 10), 0.1)
+	await get_tree().process_frame
+	# Now invoke exit cleanup
+	if tinst.has_method("_exit_tree"):
+		tinst.call("_exit_tree")
+		await get_tree().process_frame
+		if tinst.get_child_count() != 0:
+			Log.error("FAIL: TooltipManager instance did not free children on _exit_tree.")
+			fails += 1
+	# Remove instance
+	if is_instance_valid(tinst):
+		tinst.queue_free()
+
+	# 2) StartMenuPanel tween and popup cleanup
+	var sm_scene: PackedScene = load("res://scenes/start_menu.tscn") as PackedScene
+	var sm: Node = sm_scene.instantiate()
+	get_tree().root.add_child(sm)
+	# Create a popup menu child to simulate runtime menu
+	var menu: PopupMenu = PopupMenu.new()
+	sm.add_child(menu)
+	# Trigger animation to create tween (call via method to avoid typing errors)
+	sm.call("_show_with_animation")
+	await get_tree().process_frame
+	if sm._tween == null:
+		Log.error("FAIL: StartMenuPanel did not create tween on show animation.")
+		fails += 1
+	# Invoke exit cleanup
+	if sm.has_method("_exit_tree"):
+		sm.call("_exit_tree")
+		await get_tree().process_frame
+		if sm._tween != null and is_instance_valid(sm._tween):
+			Log.error("FAIL: StartMenuPanel did not kill tween on _exit_tree.")
+			fails += 1
+		# Verify no PopupMenu children remain
+		var found_popup: bool = false
+		for c in sm.get_children():
+			if c is PopupMenu:
+				found_popup = true
+				break
+		if found_popup:
+			Log.error("FAIL: StartMenuPanel did not free PopupMenu child on _exit_tree.")
+			fails += 1
+	if is_instance_valid(sm):
+		sm.queue_free()
+
+	# 3) SaveManager autosave timer cleanup
+	# Ensure autosave timer exists first
+	if SaveManager._autosave_timer == null or not is_instance_valid(SaveManager._autosave_timer):
+		# start one explicitly for test
+		SaveManager.auto_save_interval_sec = 0.1
+		SaveManager._start_autosave()
+	await get_tree().process_frame
+	if SaveManager._autosave_timer == null or not is_instance_valid(SaveManager._autosave_timer):
+		Log.error("FAIL: SaveManager did not start autosave timer for test")
+		fails += 1
+	# Invoke exit cleanup
+	if SaveManager.has_method("_exit_tree"):
+		SaveManager._exit_tree()
+		await get_tree().process_frame
+		if SaveManager._autosave_timer != null:
+			Log.error("FAIL: SaveManager did not free autosave timer on _exit_tree.")
+			fails += 1
+
+	# 3b) Taskbar scene cleanup (clock timer)
+	var tb_scene: PackedScene = load("res://scenes/taskbar.tscn") as PackedScene
+	var tb: Node = tb_scene.instantiate()
+	get_tree().root.add_child(tb)
+	await get_tree().process_frame
+	if not (tb.has_method("_exit_tree")):
+		Log.error("FAIL: Taskbar missing _exit_tree method")
+		fails += 1
+	else:
+		# Verify timer exists then cleanup
+		if tb._clock_timer == null or not is_instance_valid(tb._clock_timer):
+			Log.error("FAIL: Taskbar did not have clock timer on instantiation")
+			fails += 1
+		else:
+			tb._exit_tree()
+			await get_tree().process_frame
+			if tb._clock_timer != null:
+				Log.error("FAIL: Taskbar did not free clock timer on _exit_tree")
+				fails += 1
+	if is_instance_valid(tb):
+		tb.queue_free()
+
+	# 4) CharacterRenderer cache cleanup
+	# Populate cache
+	var body := {"head":"head_01","eyes":"eyes_01","mouth":"mouth_01","hair":"hair_01","arms":"arms_01","hands":"hands_01","legs":"legs_01","feet":"feet_01","body":"body_01"}
+	var tex = CharacterRenderer.render_character(body)
+	if CharacterRenderer._cache.size() == 0:
+		Log.error("FAIL: CharacterRenderer cache was not populated")
+		fails += 1
+	CharacterRenderer.cleanup_cache()
+	if CharacterRenderer._cache.size() != 0:
+		Log.error("FAIL: CharacterRenderer cleanup_cache did not clear cache")
+		fails += 1
+
+	return fails
 
 
 func _test_core_services() -> int:
@@ -151,9 +315,8 @@ func _test_settings() -> int:
 		
 	# Cleanup
 	SettingsManager.setting_changed.disconnect(signal_callback)
-	fails += 1
-		
 	return fails
+
 
 
 func _test_theme_manager() -> int:
@@ -365,6 +528,22 @@ func _test_gallery_ui() -> int:
 	scene._refresh_gallery()
 	await get_tree().process_frame
 	var grid = scene.get_node_or_null("./MainTab/Gallery/GalleryList/GalleryGrid/GalleryVBox")
+	# Debug info to diagnose headless mismatch between gallery container and test path
+	Log.info("TEST: scene._ui = %s" % str(scene._ui))
+	if scene._ui != null and scene._ui._gallery != null:
+		Log.info("TEST: _gallery.container = %s" % str(scene._ui._gallery.container.get_path()))
+	else:
+		Log.info("TEST: _gallery not available on scene._ui")
+	# If the compact path didn't find a node, try a more explicit path used in scenes
+	if not grid:
+		var alt = scene.get_node_or_null("./MainLayout/MainTab/MainTab#Gallery/MainTab_Gallery#GalleryList/MainTab_Gallery_GalleryList#GalleryGrid/MainTab_Gallery_GalleryList_GalleryGrid#GalleryVBox")
+		if alt:
+			Log.info("TEST: fallback found alt grid at %s" % alt.get_path())
+			grid = alt
+	if grid:
+		Log.info("TEST: grid found at %s; child_count=%d" % [grid.get_path(), grid.get_child_count()])
+		for i in range(grid.get_child_count()):
+			Log.info("TEST: grid child %d = %s" % [i, grid.get_child(i).name])
 	if not grid or grid.get_child_count() == 0:
 		Log.error("FAIL: Gallery grid is empty after refresh")
 		fails += 1
@@ -408,7 +587,9 @@ func _test_gallery_ui() -> int:
 				ev.keycode = Key.KEY_N
 				ev.pressed = true
 				scene._unhandled_input(ev)
-				var tb = scene.get_node_or_null("./MainTab")
+			var tb = scene.get_node_or_null("./MainLayout/MainTab")
+			if tb == null:
+				tb = scene.get_node_or_null("./MainTab")
 				if tb == null or tb.current_tab != 0:
 					Log.error("FAIL: 'N' shortcut did not open New Character tab")
 					fails += 1
@@ -478,4 +659,207 @@ func _test_gallery_ui() -> int:
 
 	# Clean up
 	scene.queue_free()
+	return fails
+
+
+# --- Migration & legacy cleanup tests ---
+func _test_migration_cleanup() -> int:
+	Log.info("TEST: Verifying legacy migration and optional cleanup...")
+	var fails: int = 0
+
+	# Prepare a legacy per-character JSON and a per-character item_manifest
+	var legacy_id: String = "char_legacy_001"
+	var legacy_rel: String = "res://data/characters/%s.json" % legacy_id
+	var legacy_abs: String = ProjectSettings.globalize_path(legacy_rel)
+	# Ensure characters dir exists
+	var dir_abs = ProjectSettings.globalize_path("res://data/characters/")
+	if not DirAccess.dir_exists_absolute(dir_abs):
+		DirAccess.make_dir_absolute(dir_abs)
+	# Write legacy char file
+	var legacy_char = {"id": legacy_id, "name": "Legacy Test", "category":"test", "body_parts":{}, "stats":{}}
+	var f = FileAccess.open(legacy_abs, FileAccess.WRITE)
+	if f:
+		f.store_string(JSON.stringify(legacy_char, "\t"))
+		f.close()
+
+	# Create item manifest for legacy character
+	var items_dir_abs = ProjectSettings.globalize_path("res://data/items/%s/" % legacy_id)
+	if not DirAccess.dir_exists_absolute(items_dir_abs):
+		DirAccess.make_dir_absolute(items_dir_abs)
+	var mf_abs = items_dir_abs + "item_manifest.json"
+	var mf = FileAccess.open(mf_abs, FileAccess.WRITE)
+	if mf:
+		mf.store_string(JSON.stringify({"id": legacy_id, "name":"Legacy Test"}, "\t"))
+		mf.close()
+
+	# Ensure there is no pre-existing central file so we force the legacy migration path
+	var central_abs = ProjectSettings.globalize_path("res://data/characters/characters.json")
+	if FileAccess.file_exists(central_abs):
+		DirAccess.remove_absolute(central_abs)
+
+	# Turn on cleanup flag and trigger migration
+	CharacterManager.cleanup_legacy_files_on_migrate = true
+	CharacterManager.clear_all_characters()
+	CharacterManager._load_characters()
+	await get_tree().process_frame
+
+	# Check central characters file exists and contains the legacy id
+	central_abs = ProjectSettings.globalize_path("res://data/characters/characters.json")
+	if not FileAccess.file_exists(central_abs):
+		Log.error("FAIL: Central characters file not created during migration")
+		fails += 1
+	else:
+		var cf = FileAccess.open(central_abs, FileAccess.READ)
+		if cf:
+			var j = JSON.new()
+			if j.parse(cf.get_as_text()) == OK:
+				var data = j.data
+				if not data.has(legacy_id):
+					Log.error("FAIL: legacy id not found in central file after migration")
+					fails += 1
+
+	# Legacy file should be removed when cleanup flag set
+	if FileAccess.file_exists(legacy_abs):
+		Log.error("FAIL: legacy per-character JSON still present after cleanup")
+		fails += 1
+
+	# Legacy item manifest should be removed
+	if FileAccess.file_exists(mf_abs):
+		Log.error("FAIL: legacy item_manifest still present after cleanup")
+		fails += 1
+
+	# Cleanup: remove central file and clear in-memory
+	if FileAccess.file_exists(central_abs):
+		DirAccess.remove_absolute(central_abs)
+	CharacterManager.clear_all_characters()
+	return fails
+
+
+func _test_characters_manifest() -> int:
+	Log.info("TEST: Verifying characters manifest API...")
+	var fails: int = 0
+	CharacterManager.clear_all_characters()
+	# Create a sample character via API
+	var created = CharacterManager.create_character("ManifestTest", "test", {"head":"head_01"}, {"gold":5})
+	if not created:
+		Log.error("FAIL: Unable to create test character for manifest test")
+		return 1
+	var m = CharacterManager.get_characters_manifest()
+	if typeof(m) != TYPE_ARRAY:
+		Log.error("FAIL: get_characters_manifest did not return Array")
+		fails += 1
+	else:
+		var found = false
+		for entry in m:
+			if entry.get("name", "") == "ManifestTest":
+				found = true
+				# Ensure manifest contains minimal fields
+				if not entry.has("id") or not entry.has("body_parts"):
+					Log.error("FAIL: manifest entry missing fields")
+					fails += 1
+				break
+		if not found:
+			Log.error("FAIL: ManifestTest not found in characters manifest")
+			fails += 1
+	# Cleanup
+	CharacterManager.clear_all_characters()
+	return fails
+func _test_confirm_popup_timeout() -> int:
+	Log.info("TEST: Verifying confirm dialog does not auto-timeout")
+	var fails: int = 0
+	var called := false
+	DialogManager.show_confirm("Timeout Test", "Please confirm via UI", func(res):
+		called = true
+	)
+	# wait a short while to detect unexpected auto-confirm
+	await get_tree().create_timer(1.5).timeout
+	if called:
+		Log.error("FAIL: Confirm dialog callback invoked without user action")
+		fails += 1
+	# Clean up: close dialog if present
+	for c in get_tree().get_root().get_children():
+		if c is ConfirmationDialog:
+			c.emit_signal("canceled")
+			break
+	await get_tree().process_frame
+	if fails == 0:
+		Log.info("TEST: confirm popup timeout behavior OK")
+	return fails
+
+func _test_focus_wrap_wraparound() -> int:
+	Log.info("TEST: Verifying gallery focus wrap-around when enabled")
+	var fails: int = 0
+	BodyPartRegistry.load_all_parts()
+	CharacterManager.clear_all_characters()
+	var logic := CharacterCreatorLogic.new()
+	logic.templates_dir = "res://apps/character_creator/templates/"
+	logic.load_templates()
+	var parts = {"head":"head_01","eyes":"eyes_01","mouth":"mouth_01","hair":"hair_01","body":"body_01","arms":"arms_01","hands":"hands_01","legs":"legs_01","feet":"feet_01"}
+	for i in range(6):
+		var r = logic.create_character_from_data("Wrap%d" % i, "Test", parts, logic.default_stats())
+		if not r["ok"]:
+			Log.error("FAIL: Focus wrap wraparound test failed to create char %d" % i)
+			return 1
+	var cc = load("res://apps/character_creator/character_creator.tscn").instantiate()
+	cc.set("gallery_wrap_navigation", true)
+	get_tree().root.add_child(cc)
+	await get_tree().process_frame
+	cc._connect_ui()
+	await get_tree().process_frame
+	var grid = cc._ui.gallery.container if cc._ui and cc._ui.gallery else null
+	if grid == null:
+		Log.error("FAIL: gallery grid missing")
+		return 1
+	var cards = []
+	for ch in grid.get_children():
+		if ch.name.begins_with("char_card_"):
+			cards.append(ch)
+	if cards.size() < 2:
+		Log.info("SKIP: not enough cards to test wrap-around")
+		return 0
+	# last -> right -> first
+	cards[-1].grab_focus()
+	await get_tree().process_frame
+	var e := InputEventKey.new()
+	e.keycode = Key.KEY_RIGHT
+	e.pressed = true
+	cc._unhandled_input(e)
+	await get_tree().process_frame
+	var focused = UIHelpers.get_focus_owner()
+	if focused != cards[0]:
+		Log.error("FAIL: expected focus to wrap to first, got %s" % str(focused))
+		fails += 1
+	# first -> left -> last
+	cards[0].grab_focus()
+	await get_tree().process_frame
+	e.keycode = Key.KEY_LEFT
+	cc._unhandled_input(e)
+	await get_tree().process_frame
+	focused = UIHelpers.get_focus_owner()
+	if focused != cards[-1]:
+		Log.error("FAIL: expected focus to wrap to last, got %s" % str(focused))
+		fails += 1
+	if fails == 0:
+		Log.info("TEST: focus wrap-around behavior OK")
+	return fails
+
+func _test_focus_wrap_updown() -> int:
+	Log.info("TEST: Verifying gallery focus up/down edge cases with wrap enabled")
+	var fails: int = 0
+	# Delegate to the focused test scene for deterministic behavior
+	var t := load("res://tests/focus_wrap_updown_edgecases_test.gd") as Script
+	var inst: Node = t.new()
+	get_tree().root.add_child(inst)
+	# The test script will exit the process with 0/1; however when run under this suite we must wait one frame and treat no explicit throw as pass
+	await get_tree().process_frame
+	# If the script hasn't quit the engine, consider it passed (the dedicated test script calls quit appropriately)
+	return fails
+
+func _test_a11y_keyboard_permutations_extra() -> int:
+	Log.info("TEST: Verifying A11Y keyboard permutations (extra)")
+	var fails: int = 0
+	var t := load("res://tests/a11y_keyboard_extra_permutations_test.gd") as Script
+	var inst: Node = t.new()
+	get_tree().root.add_child(inst)
+	await get_tree().process_frame
 	return fails

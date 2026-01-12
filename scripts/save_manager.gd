@@ -234,6 +234,14 @@ func _start_autosave() -> void:
 	_autosave_timer.timeout.connect(func(): save_global(_global_cache))
 	add_child(_autosave_timer)
 
+func _exit_tree() -> void:
+	# Ensure autosave timer is stopped and freed to avoid leaked Timer instances
+	if _autosave_timer != null and is_instance_valid(_autosave_timer):
+		_autosave_timer.stop()
+		# Use free() to ensure immediate resource release during headless shutdown
+		_autosave_timer.free()
+		_autosave_timer = null
+
 
 func _migrate_global(data: Dictionary) -> Dictionary:
 	var migrated: Dictionary = _default_global()

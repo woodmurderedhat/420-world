@@ -1,0 +1,220 @@
+[gd_scene load_steps=11 format=3 uid="uid://cs1cpfqkh2846"]
+
+[ext_resource type="Script" uid="uid://cduaqj8lywt8v" path="res://apps/character_creator/part_selector/part_scroller.gd" id="1_6g6cu"]
+[ext_resource type="Texture2D" uid="uid://cp24fkaq7sii2" path="res://assets/characters/alpha/front/01-alpha-head.svg" id="1_k2w67"]
+[ext_resource type="Texture2D" uid="uid://bjy8m4rjlyhnf" path="res://assets/characters/alpha/front/01-alpha-hair.svg" id="1_sgiyr"]
+[ext_resource type="Texture2D" uid="uid://cja2k28ue1j8r" path="res://assets/characters/alpha/front/01-alpha-eyes.svg" id="2_6g6cu"]
+[ext_resource type="Texture2D" uid="uid://otsimnf2xt7l" path="res://assets/characters/alpha/front/01-alpha-mouth.svg" id="3_n7uxd"]
+[ext_resource type="Texture2D" uid="uid://df7oc14r44k1n" path="res://assets/characters/alpha/front/01-alpha-body.svg" id="5_3lcsk"]
+[ext_resource type="Texture2D" uid="uid://ds0aefbsg1krr" path="res://assets/characters/alpha/front/01-alpha-legs.svg" id="6_xkens"]
+[ext_resource type="Texture2D" uid="uid://dbu2240wlkht6" path="res://assets/characters/alpha/front/01-alpha-feet.svg" id="7_nar2u"]
+[ext_resource type="Texture2D" uid="uid://criy2ymtlooia" path="res://assets/characters/alpha/front/01-alpha-hands.svg" id="8_55kde"]
+[ext_resource type="Texture2D" uid="uid://c7ciq12f0h01g" path="res://assets/characters/alpha/front/01-alpha-arms.svg" id="9_0vj5b"]
+
+[node name="PartScroller" type="Control"]
+layout_mode = 3
+anchors_preset = 0
+script = ExtResource("1_6g6cu")
+
+[node name="HBoxContainer" type="HBoxContainer" parent="."]
+layout_mode = 0
+offset_right = 56.0
+offset_bottom = 32.0
+
+[node name="SubViewportContainer" type="SubViewportContainer" parent="HBoxContainer"]
+layout_mode = 2
+stretch_shrink = 4
+
+[node name="SubViewport" type="SubViewport" parent="HBoxContainer/SubViewportContainer"]
+handle_input_locally = false
+size = Vector2i(32, 32)
+render_target_update_mode = 4
+
+[node name="Control" type="Control" parent="HBoxContainer/SubViewportContainer/SubViewport"]
+custom_minimum_size = Vector2(32, 32)
+layout_mode = 3
+anchors_preset = 8
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = -16.0
+offset_top = -16.0
+offset_right = 16.0
+offset_bottom = 16.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="head" type="TextureRect" parent="HBoxContainer/SubViewportContainer/SubViewport/Control"]
+layout_mode = 0
+offset_right = 32.0
+offset_bottom = 32.0
+texture = ExtResource("1_k2w67")
+
+[node name="eyes" type="TextureRect" parent="HBoxContainer/SubViewportContainer/SubViewport/Control"]
+layout_mode = 0
+offset_right = 32.0
+offset_bottom = 32.0
+texture = ExtResource("2_6g6cu")
+
+[node name="mouth" type="TextureRect" parent="HBoxContainer/SubViewportContainer/SubViewport/Control"]
+layout_mode = 0
+offset_right = 32.0
+offset_bottom = 32.0
+texture = ExtResource("3_n7uxd")
+
+[node name="hair" type="TextureRect" parent="HBoxContainer/SubViewportContainer/SubViewport/Control"]
+layout_mode = 0
+offset_right = 32.0
+offset_bottom = 32.0
+texture = ExtResource("1_sgiyr")
+
+[node name="body" type="TextureRect" parent="HBoxContainer/SubViewportContainer/SubViewport/Control"]
+layout_mode = 0
+offset_right = 32.0
+offset_bottom = 32.0
+texture = ExtResource("5_3lcsk")
+
+[node name="legs" type="TextureRect" parent="HBoxContainer/SubViewportContainer/SubViewport/Control"]
+layout_mode = 0
+offset_right = 32.0
+offset_bottom = 32.0
+texture = ExtResource("6_xkens")
+
+[node name="feet" type="TextureRect" parent="HBoxContainer/SubViewportContainer/SubViewport/Control"]
+layout_mode = 0
+offset_right = 32.0
+offset_bottom = 32.0
+texture = ExtResource("7_nar2u")
+
+[node name="hands" type="TextureRect" parent="HBoxContainer/SubViewportContainer/SubViewport/Control"]
+layout_mode = 0
+offset_right = 32.0
+offset_bottom = 32.0
+texture = ExtResource("8_55kde")
+
+[node name="arms" type="TextureRect" parent="HBoxContainer/SubViewportContainer/SubViewport/Control"]
+layout_mode = 0
+offset_right = 32.0
+offset_bottom = 32.0
+texture = ExtResource("9_0vj5b")
+
+[node name="VBoxContainer" type="VBoxContainer" parent="HBoxContainer"]
+layout_mode = 2
+
+[node name="Hair" type="HBoxContainer" parent="HBoxContainer/VBoxContainer"]
+layout_mode = 2
+
+[node name="ButtonPrev" type="Button" parent="HBoxContainer/VBoxContainer/Hair"]
+layout_mode = 2
+
+[node name="Label" type="Label" parent="HBoxContainer/VBoxContainer/Hair"]
+layout_mode = 2
+text = "Hair"
+
+[node name="ButtonNext" type="Button" parent="HBoxContainer/VBoxContainer/Hair"]
+layout_mode = 2
+
+[node name="Eyes" type="HBoxContainer" parent="HBoxContainer/VBoxContainer"]
+layout_mode = 2
+
+[node name="ButtonPrev" type="Button" parent="HBoxContainer/VBoxContainer/Eyes"]
+layout_mode = 2
+
+[node name="Label" type="Label" parent="HBoxContainer/VBoxContainer/Eyes"]
+layout_mode = 2
+text = "Eyes"
+
+[node name="ButtonNext" type="Button" parent="HBoxContainer/VBoxContainer/Eyes"]
+layout_mode = 2
+
+[node name="Mouth" type="HBoxContainer" parent="HBoxContainer/VBoxContainer"]
+layout_mode = 2
+
+[node name="ButtonPrev" type="Button" parent="HBoxContainer/VBoxContainer/Mouth"]
+layout_mode = 2
+
+[node name="Label" type="Label" parent="HBoxContainer/VBoxContainer/Mouth"]
+layout_mode = 2
+text = "Mouth"
+
+[node name="ButtonNext" type="Button" parent="HBoxContainer/VBoxContainer/Mouth"]
+layout_mode = 2
+
+[node name="Head" type="HBoxContainer" parent="HBoxContainer/VBoxContainer"]
+layout_mode = 2
+
+[node name="ButtonPrev" type="Button" parent="HBoxContainer/VBoxContainer/Head"]
+layout_mode = 2
+
+[node name="Label" type="Label" parent="HBoxContainer/VBoxContainer/Head"]
+layout_mode = 2
+text = "Head"
+
+[node name="ButtonNext" type="Button" parent="HBoxContainer/VBoxContainer/Head"]
+layout_mode = 2
+
+[node name="Body" type="HBoxContainer" parent="HBoxContainer/VBoxContainer"]
+layout_mode = 2
+
+[node name="ButtonPrev" type="Button" parent="HBoxContainer/VBoxContainer/Body"]
+layout_mode = 2
+
+[node name="Label" type="Label" parent="HBoxContainer/VBoxContainer/Body"]
+layout_mode = 2
+text = "Body"
+
+[node name="ButtonNext" type="Button" parent="HBoxContainer/VBoxContainer/Body"]
+layout_mode = 2
+
+[node name="Arms" type="HBoxContainer" parent="HBoxContainer/VBoxContainer"]
+layout_mode = 2
+
+[node name="ButtonPrev" type="Button" parent="HBoxContainer/VBoxContainer/Arms"]
+layout_mode = 2
+
+[node name="Label" type="Label" parent="HBoxContainer/VBoxContainer/Arms"]
+layout_mode = 2
+text = "Arms"
+
+[node name="ButtonNext" type="Button" parent="HBoxContainer/VBoxContainer/Arms"]
+layout_mode = 2
+
+[node name="Hands" type="HBoxContainer" parent="HBoxContainer/VBoxContainer"]
+layout_mode = 2
+
+[node name="ButtonPrev" type="Button" parent="HBoxContainer/VBoxContainer/Hands"]
+layout_mode = 2
+
+[node name="Label" type="Label" parent="HBoxContainer/VBoxContainer/Hands"]
+layout_mode = 2
+text = "Hands"
+
+[node name="ButtonNext" type="Button" parent="HBoxContainer/VBoxContainer/Hands"]
+layout_mode = 2
+
+[node name="Legs" type="HBoxContainer" parent="HBoxContainer/VBoxContainer"]
+layout_mode = 2
+
+[node name="ButtonPrev" type="Button" parent="HBoxContainer/VBoxContainer/Legs"]
+layout_mode = 2
+
+[node name="Label" type="Label" parent="HBoxContainer/VBoxContainer/Legs"]
+layout_mode = 2
+text = "Legs"
+
+[node name="ButtonNext" type="Button" parent="HBoxContainer/VBoxContainer/Legs"]
+layout_mode = 2
+
+[node name="Feet" type="HBoxContainer" parent="HBoxContainer/VBoxContainer"]
+layout_mode = 2
+
+[node name="ButtonPrev" type="Button" parent="HBoxContainer/VBoxContainer/Feet"]
+layout_mode = 2
+
+[node name="Label" type="Label" parent="HBoxContainer/VBoxContainer/Feet"]
+layout_mode = 2
+text = "Feet"
+
+[node name="ButtonNext" type="Button" parent="HBoxContainer/VBoxContainer/Feet"]
+layout_mode = 2

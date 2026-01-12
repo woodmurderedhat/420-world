@@ -1,6 +1,7 @@
 extends Node
 
-const PARTS_ROOT = "res://data/items/assets/character_parts/"
+const MANIFEST_PATH: String = "res://data/items/assets/character_parts/manifest.json"
+const DEFAULT_TYPES: Array[String] = ["head", "eyes", "mouth", "hair", "body", "arms", "hands", "legs", "feet"]
 
 # type -> array of parts
 var parts_cache: Dictionary = {}
@@ -15,40 +16,94 @@ func load_all_parts() -> void:
 	if not parts_cache.is_empty(): 
 		return
 		
-	Log.info("BodyPartRegistry: Loading parts...")
-	var types = ["head", "eyes", "mouth", "hair", "body", "arms", "hands", "legs", "feet"]
-	for t in types:
-		_scan_part_type(t)
+	Log.info("BodyPartRegistry: Loading parts (single manifest)...")
+	for t in DEFAULT_TYPES:
+		parts_cache[t] = []
 
-func _scan_part_type(type: String) -> void:
-	var dir_path = PARTS_ROOT + type + "/"
-	var manifest_path = dir_path + "manifest.json"
-	
-	if not FileAccess.file_exists(manifest_path):
-		parts_cache[type] = []
+	if not FileAccess.file_exists(MANIFEST_PATH):
+		Log.warn("BodyPartRegistry: missing manifest: %s" % MANIFEST_PATH)
 		return
-		
-	var file = FileAccess.open(manifest_path, FileAccess.READ)
+
+	var file := FileAccess.open(MANIFEST_PATH, FileAccess.READ)
 	if file == null:
-		parts_cache[type] = []
+		Log.error("BodyPartRegistry: failed to open manifest: %s" % MANIFEST_PATH)
 		return
 
-	var text = file.get_as_text()
+	var text := file.get_as_text()
 	file.close()
 
-	var json = JSON.new()
-	if json.parse(text) == OK:
-		var data = json.data
-		if data.has("parts"):
-			parts_cache[type] = data["parts"]
-			# Prepend path to texture and populate lookup
-			for p in parts_cache[type]:
+	var json := JSON.new()
+	if json.parse(text) != OK:
+		Log.error("BodyPartRegistry: JSON parse failed for %s" % MANIFEST_PATH)
+		return
+
+	var data: Dictionary = json.data
+	var parts = data.get("parts", null)
+	var base_dir: String = MANIFEST_PATH.get_base_dir() + "/"
+
+	# Support grouped manifest: { parts: { "head": [..], "eyes": [..] } }
+	if typeof(parts) == TYPE_DICTIONARY:
+		for t in parts.keys():
+			var arr = parts[t]
+			if typeof(arr) != TYPE_ARRAY:
+				continue
+			for raw_part in arr:
+				if typeof(raw_part) != TYPE_DICTIONARY:
+					continue
+				var p: Dictionary = raw_part
+				var pid: String = str(p.get("id", "")).strip_edges()
+				if pid == "":
+					continue
+				p["type"] = t
 				if p.has("texture_path"):
-					p["full_path"] = dir_path + p["texture_path"]
-				p["type"] = type
-				_part_lookup[p["id"]] = p
+					var tex_path: String = str(p.get("texture_path", ""))
+					if tex_path.begins_with("res://"):
+						p["full_path"] = tex_path
+					else:
+						p["full_path"] = base_dir + tex_path
+				if not parts_cache.has(t):
+					parts_cache[t] = []
+				parts_cache[t].append(p)
+				_part_lookup[pid] = p
+
+	# Backwards-compat: flat list of parts
+	elif typeof(parts) == TYPE_ARRAY:
+		for raw_part in parts:
+			if typeof(raw_part) != TYPE_DICTIONARY:
+				continue
+			var p: Dictionary = raw_part
+			var pid: String = str(p.get("id", "")).strip_edges()
+			if pid == "":
+				continue
+			var ptype: String = str(p.get("type", "")).strip_edges()
+			if ptype == "":
+				ptype = _infer_type_from_id(pid)
+			if ptype == "":
+				Log.warn("BodyPartRegistry: skipping part with unknown type: %s" % pid)
+				continue
+			p["type"] = ptype
+			if p.has("texture_path"):
+				var tex_path: String = str(p.get("texture_path", ""))
+				if tex_path.begins_with("res://"):
+					p["full_path"] = tex_path
+				else:
+					p["full_path"] = base_dir + tex_path
+			if not parts_cache.has(ptype):
+				parts_cache[ptype] = []
+			parts_cache[ptype].append(p)
+			_part_lookup[pid] = p
+
 	else:
-		parts_cache[type] = []
+		Log.warn("BodyPartRegistry: manifest.parts missing or invalid in %s" % MANIFEST_PATH)
+
+func _infer_type_from_id(part_id: String) -> String:
+	for t in DEFAULT_TYPES:
+		if part_id.begins_with(t + "_"):
+			return t
+	# Back-compat / special-case naming
+	if part_id.begins_with("body"):
+		return "body"
+	return ""
 
 func get_parts(type: String) -> Array:
 	if parts_cache.is_empty():
@@ -81,7 +136,7 @@ func get_part_texture(part_id: String, type: String = "") -> Texture2D:
 	if p.is_empty():
 		return null
 		
-	if ResourceLoader.exists(p["full_path"]):
+	if p.has("full_path") and ResourceLoader.exists(p["full_path"]):
 		var tex = load(p["full_path"])
 		texture_cache[part_id] = tex
 		return tex

@@ -5,7 +5,7 @@ extends Node
 # Default log dir. Prefer user:// so exported builds can write.
 var log_dir: String = ProjectSettings.get_setting("log_manager/log_dir", "res://debug/logs")
 # Max number of log files to keep
-var log_max_files: int = int(ProjectSettings.get_setting("log_manager/max_files", 10))
+var log_max_files: int = int(ProjectSettings.get_setting("log_manager/max_files", 3))
 
 var log_file_path: String = ""
 var _log_file_abs: String = ""

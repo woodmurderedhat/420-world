@@ -1,0 +1,17 @@
+{
+	"id": "character_creator.templates",
+	"name": "Character Templates",
+	"entry_scene": "res://apps/character_creator/templates/templates.tscn",
+	"icon": "res://assets/icons/default_app.svg",
+	"category": "Tools",
+	"description": "Templates UI for character creator.",
+	"version": "1.0",
+	"author": "System",
+	"permissions": [],
+	"window": {
+		"title": "Templates",
+		"width": 400,
+		"height": 80,
+		"resizable": false
+	}
+}

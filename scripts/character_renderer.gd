@@ -35,8 +35,33 @@ static func render_character(body_parts: Dictionary) -> Texture2D:
 						# scale the source image into a 32x32 buffer
 						src_img.resize(32, 32)
 					canvas.blit_rect(src_img, Rect2(Vector2.ZERO, src_img.get_size()), Vector2.ZERO)
+			else:
+				Log.warn("CharacterRenderer: missing texture for part %s (%s)" % [t, part_id])
 
 	# Convert to texture and cache
 	var out_tex = ImageTexture.create_from_image(canvas)
 	_cache[key] = out_tex
 	return out_tex
+
+static func save_icon(char_id: String, body_parts: Dictionary) -> String:
+	# Render and save a 32x32 icon to user://icons/char_<id>.png
+	var tex = render_character(body_parts)
+	if tex == null:
+		return ""
+	var img = tex.get_image()
+	if img == null:
+		return ""
+	var dir_abs = ProjectSettings.globalize_path("user://icons/")
+	if not DirAccess.dir_exists_absolute(dir_abs):
+		DirAccess.make_dir_absolute(dir_abs)
+	var path = dir_abs.path_join("char_%s.png" % char_id)
+	var ok = img.save_png(path)
+	if ok != OK:
+		Log.error("CharacterRenderer: failed to save icon to %s" % path)
+		return ""
+	Log.info("CharacterRenderer: saved icon to %s" % path)
+	return path
+
+static func cleanup_cache() -> void:
+	_cache.clear()
+	Log.info("CharacterRenderer: cleared texture cache")

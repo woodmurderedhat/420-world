@@ -1,0 +1,58 @@
+{
+	"char_1768226594_204914": {
+		"_archived": true,
+		"body_parts": {
+			"arms": "arms_01",
+			"body": "body_01",
+			"eyes": "eyes_01",
+			"feet": "feet_01",
+			"hair": "hair_01",
+			"hands": "hands_01",
+			"head": "head_01",
+			"legs": "legs_01",
+			"mouth": "mouth_01"
+		},
+		"category": "Test",
+		"created_date": "2026-01-12T16:03:14",
+		"deleted": false,
+		"id": "char_1768226594_204914",
+		"inventory_capacity": 10,
+		"name": "UDWrap0",
+		"stats": {
+			"agility": 5,
+			"constitution": 5,
+			"gold": 5,
+			"intelligence": 5,
+			"luck": 5,
+			"strength": 5
+		}
+	},
+	"char_1768226595_204914": {
+		"_archived": true,
+		"body_parts": {
+			"arms": "arms_01",
+			"body": "body_01",
+			"eyes": "eyes_01",
+			"feet": "feet_01",
+			"hair": "hair_01",
+			"hands": "hands_01",
+			"head": "head_01",
+			"legs": "legs_01",
+			"mouth": "mouth_01"
+		},
+		"category": "Test",
+		"created_date": "2026-01-12T16:03:15",
+		"deleted": false,
+		"id": "char_1768226595_204914",
+		"inventory_capacity": 10,
+		"name": "UDWrap6",
+		"stats": {
+			"agility": 5,
+			"constitution": 5,
+			"gold": 5,
+			"intelligence": 5,
+			"luck": 5,
+			"strength": 5
+		}
+	}
+}

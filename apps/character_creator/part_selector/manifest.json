@@ -1,0 +1,17 @@
+{
+	"id": "character_creator.part_selector",
+	"name": "Character Part Selector",
+	"entry_scene": "res://apps/character_creator/part_selector/part_selector.tscn",
+	"icon": "res://assets/icons/default_app.svg",
+	"category": "Tools",
+	"description": "Standalone Part Selector UI for character creator.",
+	"version": "1.0",
+	"author": "System",
+	"permissions": ["body_parts"],
+	"window": {
+		"title": "Part Selector",
+		"width": 320,
+		"height": 480,
+		"resizable": true
+	}
+}

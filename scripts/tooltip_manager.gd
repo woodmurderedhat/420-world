@@ -35,6 +35,7 @@ func _ready() -> void:
 
 
 func show_tooltip(text: String, global_pos: Vector2, duration: float = 3.0) -> void:
+	Log.info("TooltipManager.show_tooltip: %s at %s" % [text, str(global_pos)])
 	UIHelpers.safe_set_text(_label, text)
 	_panel.visible = true
 
@@ -82,10 +83,11 @@ func _exit_tree() -> void:
 	# Cleanup dynamically created UI to avoid leaked CanvasItem RIDs
 	if _timer != null and is_instance_valid(_timer):
 		_timer.stop()
-		_timer.queue_free()
+		# Free immediately to avoid pending object at exit
+		_timer.free()
 		_timer = null
 	if _panel != null and is_instance_valid(_panel):
-		_panel.queue_free()
+		_panel.free()
 		_panel = null
 	if _label != null:
 		_label = null

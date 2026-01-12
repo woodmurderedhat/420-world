@@ -1,0 +1,18 @@
+[gd_scene load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://apps/character_creator/graveyard/character_graveyard.gd" id="1"]
+
+[node name="CharacterGraveyardApp" type="VBoxContainer"]
+script = ExtResource( 1 )
+
+[node name="GraveyardTop" type="HBoxContainer" parent="."]
+minimum_size = Vector2(0, 36)
+
+[node name="GraveyardClearBtn" type="Button" parent="GraveyardTop"]
+text = "Clear Graveyard"
+
+[node name="GraveyardScroll" type="ScrollContainer" parent="."]
+
+[node name="GraveyardVBox" type="VBoxContainer" parent="GraveyardScroll"]
+
+[connection signal="ready" from="." to="." method="_ready"]

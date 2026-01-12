@@ -1,0 +1,17 @@
+{
+	"id": "character_creator.stat_inputs",
+	"name": "Character Stat Inputs",
+	"entry_scene": "res://apps/character_creator/stat_inputs/stat_inputs.tscn",
+	"icon": "res://assets/icons/default_app.svg",
+	"category": "Tools",
+	"description": "Stat inputs for character creator.",
+	"version": "1.0",
+	"author": "System",
+	"permissions": ["character_stats"],
+	"window": {
+		"title": "Stats",
+		"width": 300,
+		"height": 220,
+		"resizable": false
+	}
+}

@@ -1,0 +1,17 @@
+{
+	"id": "character_creator.shortcuts",
+	"name": "Character Shortcuts",
+	"entry_scene": "res://apps/character_creator/shortcuts/shortcuts.tscn",
+	"icon": "res://assets/icons/default_app.svg",
+	"category": "Tools",
+	"description": "Keyboard shortcuts helper for character creator.",
+	"version": "1.0",
+	"author": "System",
+	"permissions": [],
+	"window": {
+		"title": "Shortcuts",
+		"width": 320,
+		"height": 140,
+		"resizable": false
+	}
+}

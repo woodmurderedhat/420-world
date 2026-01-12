@@ -326,3 +326,14 @@ func _focus_prev_app_item() -> void:
 	var idx: int = items.find(cur) if cur in items else items.size()
 	var prev: Control = items[(idx - 1 + items.size()) % items.size()]
 	prev.grab_focus()
+
+
+func _exit_tree() -> void:
+	# Ensure any running animation tweens are stopped and freed
+	if _tween != null and is_instance_valid(_tween):
+		_tween.kill()
+		_tween = null
+	# Free any lingering PopupMenu children created at runtime
+	for c in get_children():
+		if c is PopupMenu and is_instance_valid(c):
+			c.queue_free()

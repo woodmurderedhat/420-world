@@ -87,12 +87,24 @@ func _exit_tree() -> void:
 	# Ensure toast panel and timer are freed
 	if _toast_timer != null and is_instance_valid(_toast_timer):
 		_toast_timer.stop()
-		_toast_timer.queue_free()
+		# Free immediately on shutdown
+		_toast_timer.free()
 		_toast_timer = null
 	if _toast_panel != null and is_instance_valid(_toast_panel):
-		_toast_panel.queue_free()
+		_toast_panel.free()
 		_toast_panel = null
 	_toast_label = null
+	# Free any active Tweens attached to this manager to avoid lingering objects
+	for c in get_children():
+		# Avoid using 'is' with internal classes in static analysis; compare class name
+		if is_instance_valid(c) and c.get_class().find("Tween") != -1:
+			# Scene tree tweens (SceneTreeTween) are not directly typed as Tween in static analysis
+			var t = c
+			if is_instance_valid(t):
+				# Try to stop if method exists, then free
+				if t.has_method("stop_all"):
+					t.stop_all()
+				t.queue_free()
 
 
 # Modal alert dialog (simple blocking callback)

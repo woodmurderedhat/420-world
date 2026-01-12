@@ -1,0 +1,208 @@
+Godot Engine v4.5.1.stable.official.f62fdbde1 - https://godotengine.org
+
+[Init #01] CoreRuntime ready (+0 ms)
+[Init #02] EventBus ready (+19 ms)
+[Init #03] SaveManager ready (+35 ms)
+[SaveManager] Global save loaded (schema=1, keys=9)
+[Init #04] SettingsManager ready (+69 ms)
+[Init #05] AppRegistry ready (+91 ms)
+[Init #06] InventoryManager ready (+145 ms)
+[Init #07] ThemeManager ready (+159 ms)
+[Init] All core services ready in 159 ms
+UserManager initialized
+ItemRegistry initialized. Loaded 3 items.
+[Init #08] ProgressionManager ready (+262 ms)
+[Init #09] CharacterManager ready (+266 ms)
+SCRIPT ERROR: Invalid call. Nonexistent 'String' constructor.
+   at: _load_characters (res://scripts/character_manager.gd:58)
+   GDScript backtrace (most recent call first):
+       [0] _load_characters (res://scripts/character_manager.gd:58)
+       [1] _ready (res://scripts/character_manager.gd:31)
+BodyPartRegistry: Loading parts (single manifest)...
+DesktopScaler: BASE_SIZE=(1080.0, 720.0) win_size=(1080.0, 720.0) raw=3.000000 scale=3.000000 pos=(-1080.0, -720.0)
+[SaveManager] Global save loaded (schema=1, keys=9)
+HEADLESS: Starting comprehensive test suite...
+CoreRuntime: Headless tests launched.
+TEST: Verifying Core Services...
+TEST RESULT: _test_core_services => 0 failures (total=0)
+TEST: Verifying EventBus...
+EventBus.emit_event 'test_event' subscribers=1
+EventBus calling handler: <anonymous lambda>(lambda)
+EventBus.emit_event 'test_event' subscribers=0
+TEST RESULT: _test_event_bus => 0 failures (total=0)
+TEST: Verifying SaveManager...
+[SaveManager] Global save loaded (schema=1, keys=7)
+TEST RESULT: _test_save_persistence => 0 failures (total=0)
+TEST: Verifying SettingsManager...
+DesktopScaler: BASE_SIZE=(1080.0, 720.0) win_size=(1080.0, 720.0) raw=2.500000 scale=2.000000 pos=(-540.0, -360.0)
+TEST RESULT: _test_settings => 0 failures (total=0)
+TEST: Verifying ThemeManager...
+TEST RESULT: _test_theme_manager => 0 failures (total=0)
+TEST: Verifying ThemeManager card style constants...
+TEST RESULT: _test_theme_card_style => 0 failures (total=0)
+TEST: Verifying Character creation flows...
+CharacterRenderer: saved icon to C:/Users/Stephanus/AppData/Roaming/Godot/app_userdata/420 world/icons/char_char_1768226591_801734.png
+CharacterManager: created char_1768226591_801734
+CharacterRenderer: saved icon to C:/Users/Stephanus/AppData/Roaming/Godot/app_userdata/420 world/icons/char_char_1768226591_801734.png
+CharacterManager: created char_1768226591_801734
+EventBus.emit_event 'shop_open' subscribers=1
+EventBus calling handler: <anonymous lambda>(lambda)
+CharacterManager: exported character char_1768226591_801734 to C:/Users/Stephanus/AppData/Roaming/Godot/app_userdata/420 world/exports/character_container_tester_26108_1768226591916.json
+TEST RESULT: _test_character_creation => 0 failures (total=0)
+TEST: Verifying Gallery UI and accessibility...
+CharacterCreator._ready: invoked
+CharacterCreator._connect_ui: invoked
+WARNING: CharacterCreatorUI: template container not found; skipping templates UI
+   at: push_warning (core/variant/variant_utility.cpp:1034)
+   GDScript backtrace (most recent call first):
+       [0] warn (res://scripts/log_manager.gd:28)
+       [1] build (res://apps/character_creator/character_creator_ui.gd:119)
+       [2] _connect_ui (res://apps/character_creator/character_creator.gd:68)
+       [3] _ready (res://apps/character_creator/character_creator.gd:40)
+       [4] _test_gallery_ui (res://tests/comprehensive_headless.gd:515)
+       [5] _ready (res://tests/comprehensive_headless.gd:44)
+       [6] _test_character_creation (res://tests/comprehensive_headless.gd:496)
+CharacterGallery.refresh: container=/root/CharacterCreator/MainLayout/MainTab/MainTab#Gallery/MainTab_Gallery#GalleryList/MainTab_Gallery_GalleryList#GalleryGrid/MainTab_Gallery_GalleryList_GalleryGrid#GalleryVBox/CharacterGalleryApp/GalleryGrid/GalleryVBox, category_select=/root/CharacterCreator/MainLayout/MainTab/MainTab#Gallery/MainTab_Gallery#GalleryList/MainTab_Gallery_GalleryList#GalleryGrid/MainTab_Gallery_GalleryList_GalleryGrid#GalleryVBox/CharacterGalleryApp/GalleryTop/CategorySelect, slot_label=/root/CharacterCreator/MainLayout/MainTab/MainTab#Gallery/MainTab_Gallery#GalleryList/MainTab_Gallery_GalleryList#GalleryGrid/MainTab_Gallery_GalleryList_GalleryGrid#GalleryVBox/CharacterGalleryApp/GalleryTop/SlotCounter
+CharacterGallery: found 1 characters
+CharacterGallery: connected callbacks for char_card_char_1768226591_801734
+CharacterGallery.refresh: final child_count=2
+CharacterGallery.refresh: container=/root/CharacterCreator/MainLayout/MainTab/MainTab#Gallery/MainTab_Gallery#GalleryList/MainTab_Gallery_GalleryList#GalleryGrid/MainTab_Gallery_GalleryList_GalleryGrid#GalleryVBox/CharacterGalleryApp/GalleryGrid/GalleryVBox, category_select=/root/CharacterCreator/MainLayout/MainTab/MainTab#Gallery/MainTab_Gallery#GalleryList/MainTab_Gallery_GalleryList#GalleryGrid/MainTab_Gallery_GalleryList_GalleryGrid#GalleryVBox/CharacterGalleryApp/GalleryTop/CategorySelect, slot_label=/root/CharacterCreator/MainLayout/MainTab/MainTab#Gallery/MainTab_Gallery#GalleryList/MainTab_Gallery_GalleryList#GalleryGrid/MainTab_Gallery_GalleryList_GalleryGrid#GalleryVBox/CharacterGalleryApp/GalleryTop/SlotCounter
+CharacterGallery: found 1 characters
+CharacterGallery: connected callbacks for char_card_char_1768226591_801734
+CharacterGallery.refresh: final child_count=2
+CharacterGallery.refresh: container=/root/CharacterCreator/MainLayout/MainTab/MainTab#Gallery/MainTab_Gallery#GalleryList/MainTab_Gallery_GalleryList#GalleryGrid/MainTab_Gallery_GalleryList_GalleryGrid#GalleryVBox, category_select=/root/CharacterCreator/MainLayout/MainTab/MainTab#Gallery/MainTab_Gallery#GalleryList/MainTab_Gallery_GalleryList#GalleryTop/MainTab_Gallery_GalleryList_GalleryTop#CategorySelect, slot_label=/root/CharacterCreator/MainLayout/MainTab/MainTab#Gallery/MainTab_Gallery#GalleryList/MainTab_Gallery_GalleryList#GalleryTop/MainTab_Gallery_GalleryList_GalleryTop#SlotCounter
+CharacterGallery: found 1 characters
+CharacterGallery: connected callbacks for char_card_char_1768226591_801734
+CharacterGallery.refresh: final child_count=2
+CharacterCreatorUI: gallery scene instantiated
+CharacterCreator: UI signaled built (ui_ready=true)
+CharacterCreator._connect_ui: created _ui
+CharacterGallery.refresh: container=/root/CharacterCreator/MainLayout/MainTab/MainTab#Gallery/MainTab_Gallery#GalleryList/MainTab_Gallery_GalleryList#GalleryGrid/MainTab_Gallery_GalleryList_GalleryGrid#GalleryVBox, category_select=/root/CharacterCreator/MainLayout/MainTab/MainTab#Gallery/MainTab_Gallery#GalleryList/MainTab_Gallery_GalleryList#GalleryTop/MainTab_Gallery_GalleryList_GalleryTop#CategorySelect, slot_label=/root/CharacterCreator/MainLayout/MainTab/MainTab#Gallery/MainTab_Gallery#GalleryList/MainTab_Gallery_GalleryList#GalleryTop/MainTab_Gallery_GalleryList_GalleryTop#SlotCounter
+CharacterGallery: found 1 characters
+CharacterGallery: connected callbacks for char_card_char_1768226591_801734
+CharacterGallery.refresh: final child_count=2
+CharacterCreator._connect_ui: invoked
+CharacterRenderer: saved icon to C:/Users/Stephanus/AppData/Roaming/Godot/app_userdata/420 world/icons/char_char_1768226592_801734.png
+CharacterManager: created char_1768226592_801734
+TEST: scene._ui = @Node@32:<Node#88936023982>
+TEST: _gallery not available on scene._ui
+TEST: fallback found alt grid at /root/CharacterCreator/MainLayout/MainTab/MainTab#Gallery/MainTab_Gallery#GalleryList/MainTab_Gallery_GalleryList#GalleryGrid/MainTab_Gallery_GalleryList_GalleryGrid#GalleryVBox
+TEST: grid found at /root/CharacterCreator/MainLayout/MainTab/MainTab#Gallery/MainTab_Gallery#GalleryList/MainTab_Gallery_GalleryList#GalleryGrid/MainTab_Gallery_GalleryList_GalleryGrid#GalleryVBox; child_count=2
+TEST: grid child 0 = char_card_char_1768226591_801734
+TEST: grid child 1 = @HBoxContainer@173
+inline mouse_entered: char_card_char_1768226591_801734
+ERROR: FAIL: Tooltip not visible after mouse_enter
+   at: push_error (core/variant/variant_utility.cpp:1024)
+   GDScript backtrace (most recent call first):
+       [0] error (res://scripts/log_manager.gd:22)
+       [1] _test_gallery_ui (res://tests/comprehensive_headless.gd:647)
+inline mouse_exited: char_card_char_1768226591_801734
+TEST RESULT: _test_gallery_ui => 1 failures (total=1)
+TEST: Verifying confirm dialog does not auto-timeout
+TEST: confirm popup timeout behavior OK
+TEST RESULT: _test_confirm_popup_timeout => 0 failures (total=1)
+TEST: Verifying gallery focus wrap-around when enabled
+CharacterRenderer: saved icon to C:/Users/Stephanus/AppData/Roaming/Godot/app_userdata/420 world/icons/char_char_1768226594_204914.png
+CharacterManager: created char_1768226594_204914
+CharacterRenderer: saved icon to C:/Users/Stephanus/AppData/Roaming/Godot/app_userdata/420 world/icons/char_char_1768226594_204914.png
+CharacterManager: created char_1768226594_204914
+CharacterRenderer: saved icon to C:/Users/Stephanus/AppData/Roaming/Godot/app_userdata/420 world/icons/char_char_1768226594_204914.png
+CharacterManager: created char_1768226594_204914
+CharacterRenderer: saved icon to C:/Users/Stephanus/AppData/Roaming/Godot/app_userdata/420 world/icons/char_char_1768226594_204914.png
+CharacterManager: created char_1768226594_204914
+CharacterRenderer: saved icon to C:/Users/Stephanus/AppData/Roaming/Godot/app_userdata/420 world/icons/char_char_1768226594_204914.png
+CharacterManager: created char_1768226594_204914
+CharacterRenderer: saved icon to C:/Users/Stephanus/AppData/Roaming/Godot/app_userdata/420 world/icons/char_char_1768226594_204914.png
+CharacterManager: created char_1768226594_204914
+CharacterCreator._ready: invoked
+CharacterCreator._connect_ui: invoked
+WARNING: CharacterCreatorUI: template container not found; skipping templates UI
+   at: push_warning (core/variant/variant_utility.cpp:1034)
+   GDScript backtrace (most recent call first):
+       [0] warn (res://scripts/log_manager.gd:28)
+       [1] build (res://apps/character_creator/character_creator_ui.gd:119)
+       [2] _connect_ui (res://apps/character_creator/character_creator.gd:68)
+       [3] _ready (res://apps/character_creator/character_creator.gd:40)
+       [4] _test_focus_wrap_wraparound (res://tests/comprehensive_headless.gd:805)
+       [5] _ready (res://tests/comprehensive_headless.gd:53)
+       [6] _test_confirm_popup_timeout (res://tests/comprehensive_headless.gd:787)
+CharacterGallery.refresh: container=/root/CharacterCreator/MainLayout/MainTab/MainTab#Gallery/MainTab_Gallery#GalleryList/MainTab_Gallery_GalleryList#GalleryGrid/MainTab_Gallery_GalleryList_GalleryGrid#GalleryVBox/CharacterGalleryApp/GalleryGrid/GalleryVBox, category_select=/root/CharacterCreator/MainLayout/MainTab/MainTab#Gallery/MainTab_Gallery#GalleryList/MainTab_Gallery_GalleryList#GalleryGrid/MainTab_Gallery_GalleryList_GalleryGrid#GalleryVBox/CharacterGalleryApp/GalleryTop/CategorySelect, slot_label=/root/CharacterCreator/MainLayout/MainTab/MainTab#Gallery/MainTab_Gallery#GalleryList/MainTab_Gallery_GalleryList#GalleryGrid/MainTab_Gallery_GalleryList_GalleryGrid#GalleryVBox/CharacterGalleryApp/GalleryTop/SlotCounter
+CharacterGallery: found 1 characters
+CharacterGallery: connected callbacks for char_card_char_1768226594_204914
+CharacterGallery.refresh: final child_count=2
+CharacterGallery.refresh: container=/root/CharacterCreator/MainLayout/MainTab/MainTab#Gallery/MainTab_Gallery#GalleryList/MainTab_Gallery_GalleryList#GalleryGrid/MainTab_Gallery_GalleryList_GalleryGrid#GalleryVBox/CharacterGalleryApp/GalleryGrid/GalleryVBox, category_select=/root/CharacterCreator/MainLayout/MainTab/MainTab#Gallery/MainTab_Gallery#GalleryList/MainTab_Gallery_GalleryList#GalleryGrid/MainTab_Gallery_GalleryList_GalleryGrid#GalleryVBox/CharacterGalleryApp/GalleryTop/CategorySelect, slot_label=/root/CharacterCreator/MainLayout/MainTab/MainTab#Gallery/MainTab_Gallery#GalleryList/MainTab_Gallery_GalleryList#GalleryGrid/MainTab_Gallery_GalleryList_GalleryGrid#GalleryVBox/CharacterGalleryApp/GalleryTop/SlotCounter
+CharacterGallery: found 1 characters
+CharacterGallery: connected callbacks for char_card_char_1768226594_204914
+CharacterGallery.refresh: final child_count=2
+CharacterGallery.refresh: container=/root/CharacterCreator/MainLayout/MainTab/MainTab#Gallery/MainTab_Gallery#GalleryList/MainTab_Gallery_GalleryList#GalleryGrid/MainTab_Gallery_GalleryList_GalleryGrid#GalleryVBox, category_select=/root/CharacterCreator/MainLayout/MainTab/MainTab#Gallery/MainTab_Gallery#GalleryList/MainTab_Gallery_GalleryList#GalleryTop/MainTab_Gallery_GalleryList_GalleryTop#CategorySelect, slot_label=/root/CharacterCreator/MainLayout/MainTab/MainTab#Gallery/MainTab_Gallery#GalleryList/MainTab_Gallery_GalleryList#GalleryTop/MainTab_Gallery_GalleryList_GalleryTop#SlotCounter
+CharacterGallery: found 1 characters
+CharacterGallery: connected callbacks for char_card_char_1768226594_204914
+CharacterGallery.refresh: final child_count=2
+CharacterCreatorUI: gallery scene instantiated
+CharacterCreator: UI signaled built (ui_ready=true)
+CharacterCreator._connect_ui: created _ui
+CharacterGallery.refresh: container=/root/CharacterCreator/MainLayout/MainTab/MainTab#Gallery/MainTab_Gallery#GalleryList/MainTab_Gallery_GalleryList#GalleryGrid/MainTab_Gallery_GalleryList_GalleryGrid#GalleryVBox, category_select=/root/CharacterCreator/MainLayout/MainTab/MainTab#Gallery/MainTab_Gallery#GalleryList/MainTab_Gallery_GalleryList#GalleryTop/MainTab_Gallery_GalleryList_GalleryTop#CategorySelect, slot_label=/root/CharacterCreator/MainLayout/MainTab/MainTab#Gallery/MainTab_Gallery#GalleryList/MainTab_Gallery_GalleryList#GalleryTop/MainTab_Gallery_GalleryList_GalleryTop#SlotCounter
+CharacterGallery: found 1 characters
+CharacterGallery: connected callbacks for char_card_char_1768226594_204914
+CharacterGallery.refresh: final child_count=2
+CharacterCreator._connect_ui: invoked
+CharacterCreator._connect_ui: invoked
+SCRIPT ERROR: Invalid access to property or key 'gallery' on a base object of type 'Node (CharacterCreatorUI)'.
+   at: _test_focus_wrap_wraparound (res://tests/comprehensive_headless.gd:809)
+   GDScript backtrace (most recent call first):
+       [0] _test_focus_wrap_wraparound (res://tests/comprehensive_headless.gd:809)
+TEST RESULT: _test_focus_wrap_wraparound => 0 failures (total=1)
+TEST: Verifying gallery focus up/down edge cases with wrap enabled
+CharacterRenderer: saved icon to C:/Users/Stephanus/AppData/Roaming/Godot/app_userdata/420 world/icons/char_char_1768226594_204914.png
+CharacterManager: created char_1768226594_204914
+CharacterRenderer: saved icon to C:/Users/Stephanus/AppData/Roaming/Godot/app_userdata/420 world/icons/char_char_1768226595_204914.png
+CharacterManager: created char_1768226595_204914
+CharacterRenderer: saved icon to C:/Users/Stephanus/AppData/Roaming/Godot/app_userdata/420 world/icons/char_char_1768226595_204914.png
+CharacterManager: created char_1768226595_204914
+CharacterRenderer: saved icon to C:/Users/Stephanus/AppData/Roaming/Godot/app_userdata/420 world/icons/char_char_1768226595_204914.png
+CharacterManager: created char_1768226595_204914
+CharacterRenderer: saved icon to C:/Users/Stephanus/AppData/Roaming/Godot/app_userdata/420 world/icons/char_char_1768226595_204914.png
+CharacterManager: created char_1768226595_204914
+CharacterRenderer: saved icon to C:/Users/Stephanus/AppData/Roaming/Godot/app_userdata/420 world/icons/char_char_1768226595_204914.png
+CharacterManager: created char_1768226595_204914
+CharacterRenderer: saved icon to C:/Users/Stephanus/AppData/Roaming/Godot/app_userdata/420 world/icons/char_char_1768226595_204914.png
+CharacterManager: created char_1768226595_204914
+CharacterCreator._ready: invoked
+CharacterCreator._connect_ui: invoked
+WARNING: CharacterCreatorUI: template container not found; skipping templates UI
+   at: push_warning (core/variant/variant_utility.cpp:1034)
+   GDScript backtrace (most recent call first):
+       [0] warn (res://scripts/log_manager.gd:28)
+       [1] build (res://apps/character_creator/character_creator_ui.gd:119)
+       [2] _connect_ui (res://apps/character_creator/character_creator.gd:68)
+       [3] _ready (res://apps/character_creator/character_creator.gd:40)
+       [4] _run_tests (res://tests/focus_wrap_updown_edgecases_test.gd:22)
+CharacterGallery.refresh: container=/root/@Node@340/CharacterCreator/MainLayout/MainTab/MainTab#Gallery/MainTab_Gallery#GalleryList/MainTab_Gallery_GalleryList#GalleryGrid/MainTab_Gallery_GalleryList_GalleryGrid#GalleryVBox/CharacterGalleryApp/GalleryGrid/GalleryVBox, category_select=/root/@Node@340/CharacterCreator/MainLayout/MainTab/MainTab#Gallery/MainTab_Gallery#GalleryList/MainTab_Gallery_GalleryList#GalleryGrid/MainTab_Gallery_GalleryList_GalleryGrid#GalleryVBox/CharacterGalleryApp/GalleryTop/CategorySelect, slot_label=/root/@Node@340/CharacterCreator/MainLayout/MainTab/MainTab#Gallery/MainTab_Gallery#GalleryList/MainTab_Gallery_GalleryList#GalleryGrid/MainTab_Gallery_GalleryList_GalleryGrid#GalleryVBox/CharacterGalleryApp/GalleryTop/SlotCounter
+CharacterGallery: found 2 characters
+CharacterGallery: connected callbacks for char_card_char_1768226594_204914
+CharacterGallery: connected callbacks for char_card_char_1768226595_204914
+CharacterGallery.refresh: final child_count=3
+CharacterGallery.refresh: container=/root/@Node@340/CharacterCreator/MainLayout/MainTab/MainTab#Gallery/MainTab_Gallery#GalleryList/MainTab_Gallery_GalleryList#GalleryGrid/MainTab_Gallery_GalleryList_GalleryGrid#GalleryVBox/CharacterGalleryApp/GalleryGrid/GalleryVBox, category_select=/root/@Node@340/CharacterCreator/MainLayout/MainTab/MainTab#Gallery/MainTab_Gallery#GalleryList/MainTab_Gallery_GalleryList#GalleryGrid/MainTab_Gallery_GalleryList_GalleryGrid#GalleryVBox/CharacterGalleryApp/GalleryTop/CategorySelect, slot_label=/root/@Node@340/CharacterCreator/MainLayout/MainTab/MainTab#Gallery/MainTab_Gallery#GalleryList/MainTab_Gallery_GalleryList#GalleryGrid/MainTab_Gallery_GalleryList_GalleryGrid#GalleryVBox/CharacterGalleryApp/GalleryTop/SlotCounter
+CharacterGallery: found 2 characters
+CharacterGallery: connected callbacks for char_card_char_1768226594_204914
+CharacterGallery: connected callbacks for char_card_char_1768226595_204914
+CharacterGallery.refresh: final child_count=3
+CharacterGallery.refresh: container=/root/@Node@340/CharacterCreator/MainLayout/MainTab/MainTab#Gallery/MainTab_Gallery#GalleryList/MainTab_Gallery_GalleryList#GalleryGrid/MainTab_Gallery_GalleryList_GalleryGrid#GalleryVBox, category_select=/root/@Node@340/CharacterCreator/MainLayout/MainTab/MainTab#Gallery/MainTab_Gallery#GalleryList/MainTab_Gallery_GalleryList#GalleryTop/MainTab_Gallery_GalleryList_GalleryTop#CategorySelect, slot_label=/root/@Node@340/CharacterCreator/MainLayout/MainTab/MainTab#Gallery/MainTab_Gallery#GalleryList/MainTab_Gallery_GalleryList#GalleryTop/MainTab_Gallery_GalleryList_GalleryTop#SlotCounter
+CharacterGallery: found 2 characters
+CharacterGallery: connected callbacks for char_card_char_1768226594_204914
+CharacterGallery: connected callbacks for char_card_char_1768226595_204914
+CharacterGallery.refresh: final child_count=3
+CharacterCreatorUI: gallery scene instantiated
+CharacterCreator: UI signaled built (ui_ready=true)
+CharacterCreator._connect_ui: created _ui
+CharacterGallery.refresh: container=/root/@Node@340/CharacterCreator/MainLayout/MainTab/MainTab#Gallery/MainTab_Gallery#GalleryList/MainTab_Gallery_GalleryList#GalleryGrid/MainTab_Gallery_GalleryList_GalleryGrid#GalleryVBox, category_select=/root/@Node@340/CharacterCreator/MainLayout/MainTab/MainTab#Gallery/MainTab_Gallery#GalleryList/MainTab_Gallery_GalleryList#GalleryTop/MainTab_Gallery_GalleryList_GalleryTop#CategorySelect, slot_label=/root/@Node@340/CharacterCreator/MainLayout/MainTab/MainTab#Gallery/MainTab_Gallery#GalleryList/MainTab_Gallery_GalleryList#GalleryTop/MainTab_Gallery_GalleryList_GalleryTop#SlotCounter
+CharacterGallery: found 2 characters
+CharacterGallery: connected callbacks for char_card_char_1768226594_204914
+CharacterGallery: connected callbacks for char_card_char_1768226595_204914
+CharacterGallery.refresh: final child_count=3
+CharacterCreator._connect_ui: invoked
+ERROR: 9 RID allocations of type 'PN13RendererDummy14TextureStorage12DummyTextureE' were leaked at exit.
+WARNING: ObjectDB instances leaked at exit (run with --verbose for details).
+   at: cleanup (core/object/object.cpp:2514)
+ERROR: 13 resources still in use at exit (run with --verbose for details).
+   at: clear (core/io/resource.cpp:795)

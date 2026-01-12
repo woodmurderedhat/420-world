@@ -1,0 +1,17 @@
+{
+	"id": "character_creator.graveyard",
+	"name": "Character Graveyard",
+	"entry_scene": "res://apps/character_creator/graveyard/graveyard.tscn",
+	"icon": "res://assets/icons/default_app.svg",
+	"category": "Tools",
+	"description": "Standalone Graveyard UI for character creator.",
+	"version": "1.0",
+	"author": "System",
+	"permissions": ["character_stats"],
+	"window": {
+		"title": "Graveyard",
+		"width": 600,
+		"height": 300,
+		"resizable": true
+	}
+}

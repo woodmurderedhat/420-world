@@ -1,0 +1,10 @@
+[gd_scene load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://apps/character_creator/stat_inputs/character_stat_inputs.gd" id="1"]
+
+[node name="CharacterStatInputsApp" type="VBoxContainer"]
+script = ExtResource( 1 )
+
+[node name="StatsContainer" type="VBoxContainer" parent="."]
+
+[connection signal="ready" from="." to="." method="_ready"]

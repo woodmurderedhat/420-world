@@ -1,0 +1,44 @@
+{
+	"$schema": "http://json-schema.org/draft-07/schema#",
+	"title": "Character",
+	"type": "object",
+	"description": "Character metadata stored in res://data/characters/characters.json",
+	"required": ["id", "name", "body_parts", "stats"],
+	"additionalProperties": true,
+	"properties": {
+		"id": { "type": "string", "minLength": 1, "pattern": "^[A-Za-z0-9_\\-:]+$" },
+		"name": { "type": "string", "minLength": 1, "maxLength": 32 },
+		"category": { "type": "string" },
+		"body_parts": {
+			"type": "object",
+			"additionalProperties": false,
+			"properties": {
+				"head": { "type": "string", "minLength": 1 },
+				"eyes": { "type": "string", "minLength": 1 },
+				"mouth": { "type": "string", "minLength": 1 },
+				"hair": { "type": "string", "minLength": 1 },
+				"body": { "type": "string", "minLength": 1 },
+				"arms": { "type": "string", "minLength": 1 },
+				"hands": { "type": "string", "minLength": 1 },
+				"legs": { "type": "string", "minLength": 1 },
+				"feet": { "type": "string", "minLength": 1 }
+			}
+		},
+		"stats": {
+			"type": "object",
+			"properties": {
+				"gold": { "type": "integer", "minimum": 0 },
+				"agility": { "type": "integer", "minimum": 1, "maximum": 99 },
+				"strength": { "type": "integer", "minimum": 1, "maximum": 99 },
+				"intelligence": { "type": "integer", "minimum": 1, "maximum": 99 },
+				"constitution": { "type": "integer", "minimum": 1, "maximum": 99 },
+				"luck": { "type": "integer", "minimum": 1, "maximum": 99 }
+			},
+			"additionalProperties": { "type": "integer", "minimum": 0 }
+		},
+		"inventory_capacity": { "type": "integer", "minimum": 0 },
+		"created_date": { "type": "string" },
+		"deleted": { "type": "boolean" },
+		"_archived": { "type": "boolean" }
+	}
+}

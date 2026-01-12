@@ -1,6 +1,7 @@
-[gd_scene load_steps=2 format=3 uid="uid://dcn2x4snmid8p"]
+[gd_scene load_steps=3 format=3 uid="uid://dcn2x4snmid8p"]
 
 [ext_resource type="Script" uid="uid://bb5vokchkps05" path="res://apps/character_creator/character_creator.gd" id="1"]
+[ext_resource type="PackedScene" uid="uid://cs1cpfqkh2846" path="res://apps/character_creator/part_selector/part_scroller.tscn" id="2_kureh"]
 
 [node name="CharacterCreator" type="Control"]
 layout_mode = 3
@@ -43,6 +44,10 @@ layout_mode = 2
 layout_mode = 2
 size_flags_horizontal = 3
 size_flags_vertical = 3
+
+[node name="PartScroller" parent="MainLayout/MainTab/MainTab#Creation/MainTab_Creation#LeftPane/MainTab_Creation_LeftPane#PartScroll/MainTab_Creation_LeftPane_PartScroll#PartsVBox" instance=ExtResource("2_kureh")]
+custom_minimum_size = Vector2(32, 128)
+layout_mode = 2
 
 [node name="MainTab_Creation#RightPane" type="VBoxContainer" parent="MainLayout/MainTab/MainTab#Creation"]
 layout_mode = 2

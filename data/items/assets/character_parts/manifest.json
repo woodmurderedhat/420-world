@@ -1,0 +1,82 @@
+﻿{
+    "parts":  {
+                  "mouth":  [
+                                {
+                                    "cost":  0,
+                                    "texture_path":  "res://assets/characters/alpha/front/01-alpha-mouth.svg",
+                                    "name":  "Alpha Mouth 01",
+                                    "id":  "mouth_01"
+                                }
+                            ],
+                  "eyes":  [
+                               {
+                                   "cost":  0,
+                                   "texture_path":  "res://assets/characters/alpha/front/01-alpha-eyes.svg",
+                                   "name":  "Alpha Eyes 01",
+                                   "id":  "eyes_01"
+                               }
+                           ],
+                  "hair":  [
+                               {
+                                   "cost":  0,
+                                   "texture_path":  "res://assets/characters/alpha/front/01-alpha-hair.svg",
+                                   "name":  "Alpha Hair 01",
+                                   "id":  "hair_01"
+                               }
+                           ],
+                  "legs":  [
+                               {
+                                   "cost":  0,
+                                   "texture_path":  "res://assets/characters/alpha/front/01-alpha-legs.svg",
+                                   "name":  "Alpha Legs 01",
+                                   "id":  "legs_01"
+                               }
+                           ],
+                  "feet":  [
+                               {
+                                   "cost":  0,
+                                   "texture_path":  "res://assets/characters/alpha/front/01-alpha-feet.svg",
+                                   "name":  "Alpha Feet 01",
+                                   "id":  "feet_01"
+                               }
+                           ],
+                  "body":  [
+                               {
+                                   "cost":  0,
+                                   "texture_path":  "res://assets/characters/alpha/front/01-alpha-body.svg",
+                                   "name":  "Alpha Body 01",
+                                   "id":  "body_01"
+                               },
+                               {
+                                   "cost":  0,
+                                   "texture_path":  "res://assets/characters/alpha/front/01-alpha-body.svg",
+                                   "name":  "Classic Body",
+                                   "id":  "body_classic"
+                               }
+                           ],
+                  "arms":  [
+                               {
+                                   "cost":  0,
+                                   "texture_path":  "res://assets/characters/alpha/front/01-alpha-arms.svg",
+                                   "name":  "Alpha Arms 01",
+                                   "id":  "arms_01"
+                               }
+                           ],
+                  "head":  [
+                               {
+                                   "cost":  0,
+                                   "texture_path":  "res://assets/characters/alpha/front/01-alpha-head.svg",
+                                   "name":  "Alpha Head 01",
+                                   "id":  "head_01"
+                               }
+                           ],
+                  "hands":  [
+                                {
+                                    "cost":  0,
+                                    "texture_path":  "res://assets/characters/alpha/front/01-alpha-hands.svg",
+                                    "name":  "Alpha Hands 01",
+                                    "id":  "hands_01"
+                                }
+                            ]
+              }
+}

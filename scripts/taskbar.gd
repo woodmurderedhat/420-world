@@ -390,3 +390,20 @@ func _style_button(b: Button, active: bool, _has_badge: bool) -> void:
 func _start_menu_btn_init() -> void:
 	# Keep this for reference if we need to reset start button default init
 	pass
+
+
+func _exit_tree() -> void:
+	# Stop and free clock timer to avoid leaked Timer resources
+	if _clock_timer != null and is_instance_valid(_clock_timer):
+		_clock_timer.stop()
+		_clock_timer.free()
+		_clock_timer = null
+	# Free pinned button nodes and clear internal maps
+	for b in _pinned_buttons.values():
+		if b != null and is_instance_valid(b):
+			b.queue_free()
+	_pinned_buttons.clear()
+	# Free any transient PopupMenu children
+	for c in get_children():
+		if c is PopupMenu and is_instance_valid(c):
+			c.queue_free()

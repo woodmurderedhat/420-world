@@ -14,6 +14,8 @@
 * **App / Game** — packaged as a Godot scene that meets the App API (lifecycle methods & metadata).
 * **Global Singletons (autoloads)** — `InventoryManager`, `PlayerDatabase`, `SaveManager`, `EventBus`, `SettingsManager`, `ThemeManager`.
 * **Data persistence** — SaveManager handles a global save file (user://global_save.json) plus per-app saves (user://apps/<app_id>.json).
+
+* **Character lifecycle & soft-delete policy** — Characters are persisted in a central `res://data/characters/characters.json`. When a character is deleted it is marked `deleted = true` and an entry is appended to the Graveyard (name, deletion_date, highest_stat, final_gold). By default containers associated with deleted characters are retained (safer to avoid data loss). The behavior is configurable via `CharacterManager.purge_containers_on_delete` — when enabled the container is removed on soft-delete and the graveyard entry records `container_purged: true` so automated cleanups can permanently remove associated artifacts.
 * **Plugin system** — each app includes a small `manifest.json` (or .tres) describing ID, name, icon, entry scene, required permissions.
 
 All UI is 2D (Control nodes) so behaviour is consistent across platforms.

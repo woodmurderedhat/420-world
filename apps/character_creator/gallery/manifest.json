@@ -1,0 +1,17 @@
+{
+	"id": "character_creator.gallery",
+	"name": "Character Gallery",
+	"entry_scene": "res://apps/character_creator/gallery/gallery.tscn",
+	"icon": "res://assets/icons/default_app.svg",
+	"category": "Tools",
+	"description": "Standalone Gallery UI for character creator.",
+	"version": "1.0",
+	"author": "System",
+	"permissions": ["inventory", "character_stats"],
+	"window": {
+		"title": "Gallery",
+		"width": 700,
+		"height": 400,
+		"resizable": true
+	}
+}

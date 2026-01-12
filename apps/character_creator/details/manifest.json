@@ -1,0 +1,17 @@
+{
+	"id": "character_creator.details",
+	"name": "Character Details",
+	"entry_scene": "res://apps/character_creator/details/details.tscn",
+	"icon": "res://assets/icons/default_app.svg",
+	"category": "Tools",
+	"description": "Character Details panel for character creator.",
+	"version": "1.0",
+	"author": "System",
+	"permissions": ["inventory"],
+	"window": {
+		"title": "Details",
+		"width": 420,
+		"height": 300,
+		"resizable": true
+	}
+}

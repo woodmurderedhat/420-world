@@ -1,0 +1,10 @@
+{
+	"bound_to_character": false,
+	"category": "character",
+	"description": "A custom character.",
+	"icon": "res://assets/icons/default_app.svg",
+	"id": "char_1768037893_801734",
+	"name": "container_tester_26656",
+	"stackable": false,
+	"value": 0
+}
